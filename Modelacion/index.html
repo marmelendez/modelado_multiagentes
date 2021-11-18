@@ -187,7 +187,7 @@
 
         class BaseTrafficLight extends THREE.Mesh {
             constructor(height = 5) {
-                const geometry = new THREE.CylinderGeometry( 0.5, 0.5, height, 32 ); // radius top, radius bottom, height, segments
+                const geometry = new THREE.CylinderGeometry( 0.15, 0.15, height, 32 ); // radius top, radius bottom, height, segments
                 const material = new THREE.MeshBasicMaterial( {color: 0x94B3FD} );
                 const cylinder = new THREE.Mesh( geometry, material );
                 super(geometry, material);
@@ -206,6 +206,55 @@
             setOnFloor() {
                 this.geometry.computeBoundingBox();
                 const bBox = this.geometry.boundingBox;
+                this.position.y = -bBox.min.y;
+            }
+        }
+
+        class Sphere extends THREE.Group {
+            constructor(x = 0, y = 0, z = 0, radius = 0.2, color = 0xcc0000, wireColor = 0xffffff) {
+                super();
+                this.radius = radius;
+                this.color = color;
+                this.wireColor = wireColor;
+                this.doubleSide = false;
+                this.rotate = false;
+                this.position.set(x, y, z);
+                // Geometría
+                const geometry = new THREE.SphereGeometry(radius, 32, 16);
+
+                // Material
+                const material = new THREE.MeshBasicMaterial({color});
+                const materialWire = new THREE.MeshBasicMaterial({wireframe: true, color: wireColor});
+
+                // Low resolution
+                this.solid = new THREE.Mesh(geometry, material);
+                this.wire = new THREE.Mesh(geometry, materialWire);
+
+                this.add(this.solid);
+                this.add(this.wire);
+            }
+            setWireframe(value = true) {
+                this.solid.setVisible(value);
+            }
+            setColor(hexColor) {
+                this.color = hexColor;
+                this.solid.material.color.setHex(hexColor);
+            }
+            setWireColor(hexColor) {
+                this.wireColor = hexColor;
+                this.wire.material.color.setHex(hexColor);
+            }
+            setDoubleSide(value) {
+                this.doubleSide = value;
+                if(value) {
+                    this.solid.material.side = THREE.DoubleSide;
+                } else {
+                    this.solid.material.side = THREE.FrontSide;
+                }
+            }
+            setOnFloor() {
+                this.medium.solid.geometry.computeBoundingBox();
+                const bBox = this.medium.solid.geometry.boundingBox;
                 this.position.y = -bBox.min.y;
             }
         }
@@ -573,8 +622,11 @@
                 lane.rotation.y = Math.PI/2;
                 this.add(lane);
 
-                this.buildings.push(new Building(-113, 11.5, 100, 3, .3, 0xA7D0CD)); // Walmart aviacion
-                this.buildings.push(new Building(113, 11.5, 100, 3, .3, 0xA7D0CD)); // Walmart aviacion
+                this.add(new Sphere(0, 5, 0));
+                this.add(new Sphere(0, 5, 1));
+
+                //this.buildings.push(new Building(-113, 11.5, 100, 3, .3, 0xA7D0CD)); // Walmart aviacion
+                //this.buildings.push(new Building(113, 11.5, 100, 3, .3, 0xA7D0CD)); // Walmart aviacion
 
 
 
