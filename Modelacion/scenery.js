@@ -1,6 +1,4 @@
 import * as THREE from 'https://unpkg.com/three/build/three.module.js';
-import Stats from "https://unpkg.com/three/examples/jsm/libs/stats.module.js";
-import {OrbitControls} from "https://unpkg.com/three@0.119.0/examples/jsm/controls/OrbitControls.js";
 import {OBJLoader} from 'https://cdn.jsdelivr.net/npm/three@0.117.1/examples/jsm/loaders/OBJLoader.js';
 import Axes from './axes.js';
 import Floor from './floor.js';
