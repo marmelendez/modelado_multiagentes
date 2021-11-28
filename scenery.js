@@ -4,6 +4,7 @@ import Axes from './axes.js';
 import Floor from './floor.js';
 
 // COMPONENTES DEL ESCENARIO
+// CALLE
 class Street extends THREE.Group {
     constructor(width = 100, height = 100, filename = "./textures/street.png", x = 0, z = 0, rX = 1, rY = 1) {
         super();
@@ -11,6 +12,8 @@ class Street extends THREE.Group {
         this.width = width;
         this.height = height;
         this.filename = filename;
+        this.x = x;
+        this.z = z;
         const geometry = new THREE.PlaneGeometry(this.width, this.height);
         const texture = new THREE.TextureLoader().load(this.filename);
         this.material = new THREE.MeshBasicMaterial({map: texture, color: 0xffffff});
@@ -19,9 +22,39 @@ class Street extends THREE.Group {
         texture.wrapS = THREE.RepeatWrapping;
         texture.wrapT = THREE.RepeatWrapping;
         texture.repeat.set(rX,rY);
-        this.position.set(x, 0, z);
+        this.position.set(this.x, 0, this.z);
         // CHILDREN
         this.add(this.mesh);
+    }
+
+    setVisible(value = true) {
+        this.visible = value;
+    }
+}
+
+
+class SideWalks extends THREE.Group {
+    constructor() {
+        super();
+        this.visible = true;
+
+        this.sidewalk1 = new Sidewalk(-15, -165);
+        this.sidewalk2 = new Sidewalk(-15, 165);
+        this.sidewalk3 = new Sidewalk(15, -165);
+        this.sidewalk4 = new Sidewalk(15, 165);
+        this.sidewalk5 = new Sidewalk(115, 15, true, 205);
+        this.sidewalk6 = new Sidewalk(115, -15, true, 205);
+        this.sidewalk7 = new Sidewalk(-115, 15, true, 205);
+        this.sidewalk8 = new Sidewalk(-115, -15, true, 205);
+  
+        this.add(this.sidewalk1);
+        this.add(this.sidewalk2);
+        this.add(this.sidewalk3);
+        this.add(this.sidewalk4);     
+        this.add(this.sidewalk5);     
+        this.add(this.sidewalk6);     
+        this.add(this.sidewalk7);     
+        this.add(this.sidewalk8);     
     }
 
     setVisible(value = true) {
@@ -58,16 +91,38 @@ class Intersection extends THREE.Group {
         this.add(this.street1);
         this.add(this.street2);
         this.add(this.street3);
-        this.add(this.street4);
-
-        //  this.crosswalks.forEach(element => {
-        //     this.add(element);
-        // });
-        
+        this.add(this.street4);     
     }
 
     setVisible(value = true) {
         this.visible = value;
+    }
+}
+
+class Sidewalk extends THREE.Mesh {
+    constructor(x = 0, z = 0, turn = false, depth = 305, rX = 1, rY = 30) {
+        super();
+        this.geometry = new THREE.BoxGeometry(5, 0.3, depth);
+        const texture = new THREE.TextureLoader().load("./textures/sidewalk.jpeg");
+        texture.wrapS = THREE.RepeatWrapping;
+        texture.wrapT = THREE.RepeatWrapping;
+        texture.repeat.set(rX,rY);
+        this.position.set(x,0,z)
+        if (turn) {
+            this.rotation.y = Math.PI/2;
+        }
+        this.material = new THREE.MeshBasicMaterial({map: texture});
+        this.setOnFloor();
+    }
+
+    setVisible(value = true) {
+        this.visible = value;
+    }
+
+    setOnFloor() {
+        this.geometry.computeBoundingBox();
+        const bBox = this.geometry.boundingBox;
+        this.position.y = -bBox.min.y;
     }
 }
 
@@ -235,11 +290,14 @@ export default class Scenary extends THREE.Group {
     constructor(size = 1000) {
         super();
         this.axes = new Axes(size);
-        this.street = new Intersection();
+        this.intersection = new Intersection();
+        this.sidewalks = new SideWalks();
         this.cubes = [];
         this.trees = [];
 
-        this.add(this.street);
+        this.add(this.intersection);
+        this.add(this.sidewalks);
+
 
          //SW - TEC - SORIANA
          this.cubes.push(new Cube(-38, 33, 50, 40, 0.3, 0x5AA897)); // Gasolinera-seven
@@ -317,7 +375,7 @@ export default class Scenary extends THREE.Group {
         this.add(this.axes);
         //this.add(this.floor);
         for(let i = 0; i < this.cubes.length; i++) {
-            this.add(this.cubes[i]);
+            //this.add(this.cubes[i]);
         }
 
         for(let i = 0; i < this.trees.length; i++) {
@@ -325,3 +383,7 @@ export default class Scenary extends THREE.Group {
         }
     }
 }
+
+        //  this.crosswalks.forEach(element => {
+        //     this.add(element);
+        // });
