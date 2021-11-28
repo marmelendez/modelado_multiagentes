@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        html, body
+        {
+            width: 100%;
+            height: 100%;
+            padding: 0;
+            margin: 0;
+            overflow: hidden;
+        }
+      </style>
+      
+</head>
+<body>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.7/dat.gui.min.js"></script>
+    
+    <script type="module">
+        import * as THREE from 'https://unpkg.com/three/build/three.module.js';
+        import Stats from "https://unpkg.com/three/examples/jsm/libs/stats.module.js";
+        import {OrbitControls} from "https://unpkg.com/three@0.119.0/examples/jsm/controls/OrbitControls.js";
+        import {OBJLoader} from 'https://cdn.jsdelivr.net/npm/three@0.117.1/examples/jsm/loaders/OBJLoader.js';
+        import Axes from './axes.js';
+        import Floor from './floor.js';
+        import Scenary from './scenery.js';
+        import ClaseCar from './car.js';
+
+        let renderer, scene, camera, orbitControls, model, stats, gui;
+        
+        function init(event) {
+            // RENDERER ENGINE
+            renderer = new THREE.WebGLRenderer({antialias: true});
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setViewport(0, 0, window.innerWidth, window.innerHeight);
+            renderer.setClearColor(new THREE.Color(0, 0, 0));
+            renderer.setPixelRatio(window.devicePixelRatio);
+            document.body.appendChild(renderer.domElement);
+            
+            // SCENE
+            scene = new THREE.Scene();
+
+            // MODELS
+            const scenary = new Scenary();
+            model = new ClaseCar(0,200);
+
+            // SCENE GRAPH
+            scene.add(scenary);
+            scene.add(model);
+
+            // CAMERA (PERSPECTIVE)
+            const fov = 60;    // Field ov view
+            const aspect = window.innerWidth / window.innerHeight;
+            const near = 0.01;
+            const far = 10000.0;
+            camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
+            camera.position.set(-100, 100, 300);
+            // CAMERA CONTROLS
+            orbitControls = new OrbitControls(camera, renderer.domElement);
+            //orbitControls.target = model.position;
+            orbitControls.update();
+
+            // SETUP STATS
+            stats = new Stats();
+            stats.showPanel(0); // 0: fps, 1: ms, 2: mb, 3+: custom
+            document.body.appendChild(stats.dom);
+
+            // GUI
+            gui = new dat.GUI();
+
+            // SCENE-MENU
+            const guiSceneMenu = gui.addFolder("Scene Menu");
+            guiSceneMenu.add(scenary.axes, "visible").setValue(scenary.axes.visible).name("World Axes").listen().onChange(function(value) {
+                scenary.axes.setVisible(value);
+            });
+
+            /*guiSceneMenu.add(scenary.floor, "visible").setValue(scenary.floor.visible).name("Floor").listen().onChange(function(value) {
+                scenary.floor.setVisible(value);
+            });*/
+
+            guiSceneMenu.open();
+
+            // MODEL-MENU
+            const guiModelMenu = gui.addFolder("Model Menu");
+
+            // GUI MENU
+            gui.add(model, "animate").setValue(model.rotate).name("Animate").listen().onChange(function(value) {});
+
+            // DRAW SCENE IN A RENDER LOOP (ANIMATION)
+            renderLoop();
+        }
+
+        function renderLoop() {
+            stats.begin();
+            renderer.render(scene, camera); // DRAW THE SCENE GRAPH
+            updateScene();
+            stats.end();
+            requestAnimationFrame(renderLoop);
+        }
+
+        function updateScene() {
+           if(model && model.animate) {
+               model.position.z = model.position.z - 0.1;
+           }
+        }
+
+        // EVENT LISTENERS & HANDLERS
+        document.addEventListener("DOMContentLoaded", init);
+
+        window.addEventListener("resize", () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);            
+        }, false);
+
+
+        /* 
+        // SEMAFORO
+        class BaseTrafficLight extends THREE.Mesh {
+            constructor(height = 5) {
+                const geometry = new THREE.CylinderGeometry( 0.15, 0.15, height, 32 ); // radius top, radius bottom, height, segments
+                const material = new THREE.MeshBasicMaterial( {color: 0x94B3FD} );
+                const cylinder = new THREE.Mesh( geometry, material );
+                super(geometry, material);
+                this.color = 0x94B3FD;
+                this.setOnFloor();
+            }
+        
+            getColor() {
+                return this.color;
+            }
+
+            setColor(hexColor) {
+                this.material.color.setHex(hexColor);
+            }
+
+            setOnFloor() {
+                this.geometry.computeBoundingBox();
+                const bBox = this.geometry.boundingBox;
+                this.position.y = -bBox.min.y;
+            }
+        }
+
+        class Sphere extends THREE.Group {
+            constructor(x = 0, y = 0, z = 0, radius = 0.2, color = 0xcc0000, wireColor = 0xffffff) {
+                super();
+                this.radius = radius;
+                this.color = color;
+                this.wireColor = color; //wireColor;
+                this.doubleSide = false;
+                this.rotate = false;
+                this.position.set(x, y, z);
+                // Geometría
+                const geometry = new THREE.SphereGeometry(radius, 32, 16);
+
+                // Material
+                const material = new THREE.MeshBasicMaterial({color});
+                const materialWire = new THREE.MeshBasicMaterial({wireframe: true, color: color});
+
+                // Low resolution
+                this.solid = new THREE.Mesh(geometry, material);
+                this.wire = new THREE.Mesh(geometry, materialWire);
+
+                this.add(this.solid);
+                this.add(this.wire);
+            }
+            setWireframe(value = true) {
+                this.solid.setVisible(value);
+            }
+            setColor(hexColor) {
+                this.color = hexColor;
+                this.solid.material.color.setHex(hexColor);
+            }
+            setWireColor(hexColor) {
+                this.wireColor = hexColor;
+                this.wire.material.color.setHex(hexColor);
+            }
+            setDoubleSide(value) {
+                this.doubleSide = value;
+                if(value) {
+                    this.solid.material.side = THREE.DoubleSide;
+                } else {
+                    this.solid.material.side = THREE.FrontSide;
+                }
+            }
+            setOnFloor() {
+                this.medium.solid.geometry.computeBoundingBox();
+                const bBox = this.medium.solid.geometry.boundingBox;
+                this.position.y = -bBox.min.y;
+            }
+        }*/        
+
+    </script>
+</body>
+</html>
