@@ -18,11 +18,11 @@ class Skybox extends THREE.Mesh {
                  new THREE.MeshBasicMaterial({map: new THREE.TextureLoader().load("./textures/skybox/sky_rt.png"), side: THREE.DoubleSide}), // right
                  new THREE.MeshBasicMaterial({map: new THREE.TextureLoader().load("./textures/skybox/sky_rt.png"), side: THREE.DoubleSide}) // left
                 ];
-        this.scale.set(100,100,100);
-        this.setOnFloor();
+        //this.scale.set(100,100,100);
+        this.position.set(0,this.size/2 - 10,0);
+        //this.setOnFloor();
     }
     setOnFloor() {
-
         this.geometry.computeBoundingBox();
         const bBox = this.geometry.boundingBox;
         this.position.y = -bBox.min.y;
@@ -49,6 +49,43 @@ class Street extends THREE.Group {
         this.position.set(this.x, 0, this.z);
         // CHILDREN
         this.add(this.mesh);
+    }
+
+    setVisible(value = true) {
+        this.visible = value;
+    }
+}
+
+class Intersection extends THREE.Group {
+    constructor() {
+        super();
+        this.visible = true;
+        this.cross = new Street(25, 25, "./textures/center_street.png");
+
+        this.crosswalk1 = new Street(25, 5, "./textures/crosswalk.png", 0, 15);
+        this.crosswalk2 = new Street(25, 5, "./textures/crosswalk.png", 0, -15);
+        this.crosswalk2.rotation.y = Math.PI;
+        this.crosswalk3 = new Street(25, 5, "./textures/crosswalk.png", 15, 0);
+        this.crosswalk3.rotation.y = Math.PI/2;
+        this.crosswalk4 = new Street(25, 5, "./textures/crosswalk.png", -15, 0);
+        this.crosswalk4.rotation.y = -Math.PI/2;
+
+        this.street1 = new Street(25, 300, "./textures/street.png", 0, 167.5, 1, 20);
+        this.street2 = new Street(25, 300, "./textures/street.png", 0, -167.5, 1, 20);
+        this.street3 = new Street(25, 200, "./textures/street.png", -117.5, 0, 1, 13);
+        this.street3.rotation.y = Math.PI/2;
+        this.street4 = new Street(25, 200, "./textures/street.png", 117.5, 0, 1, 13);
+        this.street4.rotation.y = Math.PI/2;
+
+        this.add(this.cross);
+        this.add(this.crosswalk1);
+        this.add(this.crosswalk2);
+        this.add(this.crosswalk3);
+        this.add(this.crosswalk4);
+        this.add(this.street1);
+        this.add(this.street2);
+        this.add(this.street3);
+        this.add(this.street4);     
     }
 
     setVisible(value = true) {
@@ -101,44 +138,6 @@ class SidewalkGroup extends THREE.Group {
     }
 }
 
-class Intersection extends THREE.Group {
-    constructor() {
-        super();
-        this.visible = true;
-        this.cross = new Street(25, 25, "./textures/center_street.png");
-
-        this.crosswalk1 = new Street(25, 5, "./textures/crosswalk.png", 0, 15);
-        this.crosswalk2 = new Street(25, 5, "./textures/crosswalk.png", 0, -15);
-        this.crosswalk2.rotation.y = Math.PI;
-        this.crosswalk3 = new Street(25, 5, "./textures/crosswalk.png", 15, 0);
-        this.crosswalk3.rotation.y = Math.PI/2;
-        this.crosswalk4 = new Street(25, 5, "./textures/crosswalk.png", -15, 0);
-        this.crosswalk4.rotation.y = -Math.PI/2;
-
-        this.street1 = new Street(25, 300, "./textures/street.png", 0, 167.5, 1, 20);
-        this.street2 = new Street(25, 300, "./textures/street.png", 0, -167.5, 1, 20);
-        this.street3 = new Street(25, 200, "./textures/street.png", -117.5, 0, 1, 13);
-        this.street3.rotation.y = Math.PI/2;
-        this.street4 = new Street(25, 200, "./textures/street.png", 117.5, 0, 1, 13);
-        this.street4.rotation.y = Math.PI/2;
-
-        this.add(this.cross);
-        this.add(this.crosswalk1);
-        this.add(this.crosswalk2);
-        this.add(this.crosswalk3);
-        this.add(this.crosswalk4);
-        this.add(this.street1);
-        this.add(this.street2);
-        this.add(this.street3);
-        this.add(this.street4);     
-    }
-
-    setVisible(value = true) {
-        this.visible = value;
-    }
-}
-
-
 class Cube extends THREE.Group {
     constructor(x = 0, z = 0, front = 50, depth = 50, height = 10, color = 0xcc0000, wireColor = 0xffffff) {
         super();
@@ -186,76 +185,60 @@ class Cube extends THREE.Group {
     }
 }
 
-class ScenaryComponent extends THREE.Group {
-    constructor(color = 0x808080, scaleFactor = 1, objFileName = "./assets/obj/GasStation.obj", vertical = true, x = 0, z = 0, y = 0) {
+class CubeGroup extends THREE.Group {
+    constructor() {
         super();
-        this.x = x;
-        this.z = z;
-        this.y = y;
-        this.position.set(x, y, z);
-        this.color = color;
-        this.scaleFactor = scaleFactor;
-        this.vertical = vertical;
-        this.wireColor = 0xffffff;
-        this.objFileName = objFileName;
-        this.loadOBJModel(objFileName);
-    }
-    loadOBJModel(objFileName) {
-        const loader = new OBJLoader();// instantiate a loader
-        let component = this; // load a resource
-        loader.load(objFileName,
-            function (object) { 
-                // SOLID
-                object.traverse(function(child) {
-                    if (child.isMesh) {
-                        child.material = new THREE.MeshBasicMaterial({color: component.color});
-                    }
-                });
-                component.solid = object;
-                // WIRE
-                component.wire = object.clone();
-                component.wire.traverse(function(child) {
-                    if (child.isMesh) {
-                        child.material = new THREE.MeshBasicMaterial({wireframe: true, color: component.wireColor});
-                    }
-                });
+        //SW - TEC - SORIANA
+        this.add(new Cube(-57.5, 37.5, 20, 30, 10, 0x5CA1B1)); // Gasolinera-seven -57.5, 37.5, 20, 40, 10, "./textures/seven_front.png"
+        this.add(new Cube(-42.5, 37.5, 50, 40, 0.4, 0x808080));
+        this.add(new Cube(-42.5, 69.5, 50, 20, 15, 0xC6D5D8));// Tires
 
-                component.setRotation(component.vertical);
+        this.add(new Cube(-42.5, 96.5, 50, 30, 10, 0xEF8F63));// Peak a bo
+        this.add(new Cube(-42.5, 121.5, 50, 20, 0.4, 0x5AA897));
 
-                component.scale.set(component.scaleFactor, component.scaleFactor, component.scaleFactor);
-                // CHILDREN
-                component.add(component.solid);
-                component.add(component.wire);
-            },
-                // called when loading is in progresses
-            function (xhr) {
-                console.log((xhr.loaded / xhr.total * 100) + '% loaded');
-            },
-                // called when loading has errors
-            function (error) {
-                console.log( 'An error happened' + error );
-            }
-        );
-    }
-    setOnFloor() {
-        const bBox = new THREE.Box3();
-        bBox.setFromObject(this.solid);
-        this.position.y = -bBox.min.y;
-    }
+        //this.cubes.push(new Cube(-42.5, 218.5, 50, 170, 15, 0x325288));// Tec
 
-    setColor(color) {
-        this.mesh.material.color.setHex(color);
-    }
+        this.soriana = new Cube(-137, 92.5, 50, 120, 20,0xD43A36);
+        this.soriana.rotation.y = Math.PI/2;
+        this.add(this.soriana);// Soriana
+        this.add(new Cube(-137, 42.5, 120, 50, 0.4, 0x808080)); //soriana
+         
+        //NW - RECINTO
+        this.add(new Cube(-115, -165, 195, 295, 15, 0xC7E988));// recinto
 
-    setRotation(vertical = true) {
-        if (vertical) {
-            this.rotation.y = Math.PI;
-        } else {
-            this.rotation.y = 2 * Math.PI;
-        }
-    }
-}
+        //SE - ESQUINA SQUARE MARKET
+        this.add(new Cube(45, 77.5, 55, 120, 25, 0xFF414D)); // Square
+        this.add(new Cube(45, 159.5, 55, 40, 40, 0xEBDFCF)); // Edificio en construccion 1
+        this.add(new Cube(45, 199, 55, 35, 10, 0xE9E9E9)); // pet
+        this.add(new Cube(45, 243.5, 55, 50, 50, 0xC2B2A3)); // Edificio en construccion 2
+        this.add(new Cube(45, 293, 55, 45, 7, 0xE9CA7C)); // Cochera
+        
+        this.add(new Cube(92, 52.5, 35, 70, 10, 0xBCE5E5)); // Guarderia
+        this.add(new Cube(124, 52.5, 25, 70, 10, 0xDFC159)); // Edificio en construccion 3
+        this.add(new Cube(168.5, 52.5, 60, 70, 20, 0xA2D0C0)); // Plaza
 
+        
+        // NE - WALMART
+        this.oxxo = new Cube(37.5, -57.5, 20, 40, 10, 0xD54E2F);
+        this.oxxo.rotation.y = -Math.PI/2;
+        this.add(this.oxxo); // Gasolinera
+        this.add(new Cube(37.5, -32.5, 40, 30, 0.4, 0x808080));
+
+        this.add(new Cube(77.5, -129.5, 120, 120, 0.4,0x808080)); // Walmart
+        this.walmart = new Cube(169.5, -129.5, 64, 120, 20, 0x2E82C1);
+        this.walmart.rotation.y = Math.PI;
+        this.add(this.walmart)
+
+        this.add(new Cube(52.5, -251.5, 70, 120, 10, 0xB3DBAC)); // Valle real
+    
+        this.restaurant = new Cube(79.5, -42.5, 50, 40, 15, 0x403244);
+        this.restaurant.rotation.y = -Math.PI/2;
+        this.add(this.restaurant)
+
+        this.add(new Cube(151.5, -43.5, 100, 52, 0.4, 0x808080));
+
+    }
+} 
 
 class TrafficLight extends THREE.Group {
     constructor(x = 0, z = 0, color = 0x79DE79) {
@@ -324,7 +307,6 @@ class TrafficLightGroup extends THREE.Group {
         this.traffic3.rotation.y = Math.PI/2;
         this.traffic4 = new TrafficLight(13, -7);
         this.traffic4.rotation.y = -Math.PI/2;
-
 
         this.add(this.traffic1);
         this.add(this.traffic2);
@@ -438,88 +420,93 @@ class BuildingFloor extends THREE.Mesh {
 class BuildingGroup extends THREE.Group {
     constructor() {
         super();
-
-    }
-}
-
-
-export default class Scenary extends THREE.Group {
-    constructor(size = 1000) {
-        super();
-        this.axes = new Axes(size);
-        this.skybox = new Skybox(50);
-        this.intersection = new Intersection();
-        this.sidewalks = new SidewalkGroup();
-        this.trafficLights = new TrafficLightGroup();
-        this.building = new BuildingGroup();
-        this.buildings = [];
-        this.cubes = [];
-
-        this.add(this.skybox);
-        this.add(this.intersection);
-        this.add(this.sidewalks);
-        this.add(this.trafficLights);
-
-
         //SW - TEC - SORIANA
-        this.buildings.push(new Building(-57.5, 37.5, 20, 30, 10, "./textures/buildings/seven_", 0x0c0c0c)); // Gasolinera-seven -57.5, 37.5, 20, 40, 10, "./textures/seven_front.png"
-        this.buildings.push(new BuildingFloor(-42.5, 37.5, 50, 40, 0.4, "./textures/seven_parking.png", 0x5AA897));
-        this.buildings.push(new Building(-42.5, 69.5, 50, 20, 15, "./textures/buildings/taller_", 0xD9DAD1));// Tires
+        this.add(new Building(-57.5, 37.5, 20, 30, 10, "./textures/buildings/seven_", 0x0c0c0c)); // Gasolinera-seven -57.5, 37.5, 20, 40, 10, "./textures/seven_front.png"
+        this.add(new BuildingFloor(-42.5, 37.5, 50, 40, 0.4, "./textures/seven_parking.png", 0x5AA897));
+        this.add(new Building(-42.5, 69.5, 50, 20, 15, "./textures/buildings/taller_", 0xD9DAD1));// Tires
 
-        this.buildings.push(new Building(-42.5, 96.5, 50, 30, 10,"./textures/buildings/kinder_", 0xEF8F63));// Peak a bo
-        this.buildings.push(new BuildingFloor(-42.5, 121.5, 50, 20, 0.4, "./textures/kinder_parking.png", 0x5AA897));
+        this.add(new Building(-42.5, 96.5, 50, 30, 10,"./textures/buildings/kinder_", 0xEF8F63));// Peak a bo
+        this.add(new BuildingFloor(-42.5, 121.5, 50, 20, 0.4, "./textures/kinder_parking.png", 0x5AA897));
 
-        this.cubes.push(new Cube(-42.5, 218.5, 50, 170, 15, 0x325288));// Tec
+        //this.cubes.push(new Cube(-42.5, 218.5, 50, 170, 15, 0x325288));// Tec
 
         this.soriana = new Building(-137, 92.5, 50, 120, 20,"./textures/buildings/soriana_",0xD43A36);
         this.soriana.rotation.y = Math.PI/2;
-        this.buildings.push(this.soriana);// Soriana
-        this.buildings.push(new BuildingFloor(-137, 42.5, 120, 50, 0.4, "./textures/soriana_parking.png", 0x5AA897)); //soriana
+        this.add(this.soriana);// Soriana
+        this.add(new BuildingFloor(-137, 42.5, 120, 50, 0.4, "./textures/soriana_parking.png", 0x5AA897)); //soriana
          
         //NW - RECINTO
-        this.buildings.push(new Building(-115, -165, 195, 295, 15, "./textures/buildings/recinto_", 0xC7E988));// recinto
+        this.add(new Building(-115, -165, 195, 295, 15, "./textures/buildings/recinto_", 0xC7E988));// recinto
 
         //SE - ESQUINA SQUARE MARKET
-        this.buildings.push(new Building(45, 77.5, 55, 120, 25,"./textures/buildings/square_", 0xFF414D)); // Square
+        this.add(new Building(45, 77.5, 55, 120, 25,"./textures/buildings/square_", 0xFF414D)); // Square
 
-        this.buildings.push(new Building(45, 159.5, 55, 40, 40,  "./textures/buildings/build2_", 0xD5CDBA)); // Edificio en construccion 1
-        this.buildings.push(new Building(45, 199, 55, 35, 10, "./textures/buildings/pet_", 0xE9E9E9)); // pet
-        this.buildings.push(new Building(45, 243.5, 55, 50, 50, "./textures/buildings/build_", 0xC2B2A3)); // Edificio en construccion 2
+        this.add(new Building(45, 159.5, 55, 40, 40,  "./textures/buildings/build2_", 0xD5CDBA)); // Edificio en construccion 1
+        this.add(new Building(45, 199, 55, 35, 10, "./textures/buildings/pet_", 0xE9E9E9)); // pet
+        this.add(new Building(45, 243.5, 55, 50, 50, "./textures/buildings/build_", 0xC2B2A3)); // Edificio en construccion 2
 
-        this.buildings.push(new Building(45, 293, 55, 45, 7, "./textures/buildings/porton_", 0xE9CA7C)); // Cochera
+        this.add(new Building(45, 293, 55, 45, 7, "./textures/buildings/porton_", 0xE9CA7C)); // Cochera
 
-        this.buildings.push(new Building(92, 52.5, 35, 70, 10,"./textures/buildings/school_", 0xBCE5E5)); // Guarderia
-        this.buildings.push(new Building(124, 52.5, 25, 70, 10, "./textures/buildings/const_", 0x808080)); // Edificio en construccion 3
-        this.buildings.push(new Building(168.5, 52.5, 60, 70, 20, "./textures/buildings/plaza_", 0x767B84)); // Plaza
+        this.add(new Building(92, 52.5, 35, 70, 10,"./textures/buildings/school_", 0xBCE5E5)); // Guarderia
+        this.add(new Building(124, 52.5, 25, 70, 10, "./textures/buildings/const_", 0x808080)); // Edificio en construccion 3
+        this.add(new Building(168.5, 52.5, 60, 70, 20, "./textures/buildings/plaza_", 0x767B84)); // Plaza
 
         
         // NE - WALMART
         this.oxxo = new Building(37.5, -57.5, 20, 40, 10, "./textures/buildings/oxxo_", 0xE53F39);
         this.oxxo.rotation.y = -Math.PI/2;
-        this.buildings.push(this.oxxo); // Gasolinera
-        this.buildings.push(new BuildingFloor(37.5, -32.5, 40, 30, 0.4, "./textures/kinder_parking.png", 0x5AA897));
+        this.add(this.oxxo); // Gasolinera
+        this.add(new BuildingFloor(37.5, -32.5, 40, 30, 0.4, "./textures/kinder_parking.png", 0x5AA897));
 
-        this.buildings.push(new BuildingFloor(77.5, -129.5, 120, 120, 0.3, "./textures/walmart_parking.png",0xA7D0CD)); // Walmart
+        this.add(new BuildingFloor(77.5, -129.5, 120, 120, 0.3, "./textures/walmart_parking.png",0xA7D0CD)); // Walmart
         this.walmart = new Building(169.5, -129.5, 64, 120, 20, "./textures/buildings/walmart_", 0x2E82C1);
         this.walmart.rotation.y = Math.PI;
-        this.buildings.push(this.walmart)
+        this.add(this.walmart)
 
-        this.buildings.push(new Building(52.5, -251.5, 70, 120, 10, "./textures/buildings/valle_", 0xB3DBAC)); // Valle real
+        this.add(new Building(52.5, -251.5, 70, 120, 10, "./textures/buildings/valle_", 0xB3DBAC)); // Valle real
     
         this.restaurant = new Building(79.5, -42.5, 50, 40, 15, "./textures/buildings/rest_", 0x404040);
         this.restaurant.rotation.y = -Math.PI/2;
-        this.buildings.push(this.restaurant)
+        this.add(this.restaurant)
 
-        this.buildings.push(new BuildingFloor(151.5, -43.5, 100, 52, 0.4, "./textures/walmart_parking_av.png", 0x5AA897));
-        
-        // CHILDREN
+        this.add(new BuildingFloor(151.5, -43.5, 100, 52, 0.4, "./textures/walmart_parking_av.png", 0x5AA897));
+    }
+}
 
-        this.add(this.axes);
-        this.buildings.forEach(element => {
-            this.add(element);
-        });
-        this.cubes.forEach(element => {
-            //this.add(element);
-        });
+
+export default class Scenary extends THREE.LOD {
+    constructor(size = 1000) {
+        super();
+
+        this.axes = new Axes();
+
+        this.low = new THREE.Group()
+        this.low.add(this.axes);
+        this.low.add(new Skybox(1200));
+        this.low.add(new Intersection());
+        this.low.add(new SidewalkGroup());
+        this.low.add(new TrafficLightGroup());
+        this.low.add(new CubeGroup());
+
+        this.high = new THREE.Group()
+        this.high.add(new Skybox(1200));
+        this.high.add(this.axes);
+        this.high.add(new Intersection());
+        this.high.add(new SidewalkGroup());
+        this.high.add(new TrafficLightGroup());
+        this.high.add(new BuildingGroup());
+
+        this.addLevel(this.high, 70);
+        this.addLevel(this.low, 120);
+
+
+
+        // this.axes = new Axes(size);
+        // this.skybox = new Skybox(50);
+        // this.intersection = new Intersection();
+        // this.sidewalks = new SidewalkGroup();
+        // this.trafficLights = new TrafficLightGroup();
+        // this.building = new BuildingGroup();
+
     }
 }
