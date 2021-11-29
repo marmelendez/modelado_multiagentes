@@ -1,7 +1,5 @@
 import * as THREE from 'https://unpkg.com/three/build/three.module.js';
 import {OBJLoader} from 'https://cdn.jsdelivr.net/npm/three@0.117.1/examples/jsm/loaders/OBJLoader.js';
-import Axes from './axes.js';
-import Floor from './floor.js';
 
 // COMPONENTES DEL ESCENARIO
 // CALLE
@@ -18,9 +16,7 @@ class Skybox extends THREE.Mesh {
                  new THREE.MeshBasicMaterial({map: new THREE.TextureLoader().load("./textures/skybox/sky_rt.png"), side: THREE.DoubleSide}), // right
                  new THREE.MeshBasicMaterial({map: new THREE.TextureLoader().load("./textures/skybox/sky_rt.png"), side: THREE.DoubleSide}) // left
                 ];
-        //this.scale.set(100,100,100);
         this.position.set(0,this.size/2 - 10,0);
-        //this.setOnFloor();
     }
     setOnFloor() {
         this.geometry.computeBoundingBox();
@@ -192,15 +188,10 @@ class CubeGroup extends THREE.Group {
         this.add(new Cube(-57.5, 37.5, 20, 30, 10, 0x5CA1B1)); // Gasolinera-seven -57.5, 37.5, 20, 40, 10, "./textures/seven_front.png"
         this.add(new Cube(-42.5, 37.5, 50, 40, 0.4, 0x808080));
         this.add(new Cube(-42.5, 69.5, 50, 20, 15, 0xC6D5D8));// Tires
-
         this.add(new Cube(-42.5, 96.5, 50, 30, 10, 0xEF8F63));// Peak a bo
         this.add(new Cube(-42.5, 121.5, 50, 20, 0.4, 0x5AA897));
-
-        //this.cubes.push(new Cube(-42.5, 218.5, 50, 170, 15, 0x325288));// Tec
-
-        this.soriana = new Cube(-137, 92.5, 50, 120, 20,0xD43A36);
-        this.soriana.rotation.y = Math.PI/2;
-        this.add(this.soriana);// Soriana
+        this.add(new Cube(-42.5, 218.5, 50, 170, 15, 0x325288));// Tec
+        this.add(new Cube(-137, 92.5, 120, 50, 20,0xD43A36));// Soriana
         this.add(new Cube(-137, 42.5, 120, 50, 0.4, 0x808080)); //soriana
          
         //NW - RECINTO
@@ -216,27 +207,15 @@ class CubeGroup extends THREE.Group {
         this.add(new Cube(92, 52.5, 35, 70, 10, 0xBCE5E5)); // Guarderia
         this.add(new Cube(124, 52.5, 25, 70, 10, 0xDFC159)); // Edificio en construccion 3
         this.add(new Cube(168.5, 52.5, 60, 70, 20, 0xA2D0C0)); // Plaza
-
         
         // NE - WALMART
-        this.oxxo = new Cube(37.5, -57.5, 20, 40, 10, 0xD54E2F);
-        this.oxxo.rotation.y = -Math.PI/2;
-        this.add(this.oxxo); // Gasolinera
+        this.add(new Cube(37.5, -57.5, 40, 20, 10, 0xD54E2F)); // Gasolinera
         this.add(new Cube(37.5, -32.5, 40, 30, 0.4, 0x808080));
-
         this.add(new Cube(77.5, -129.5, 120, 120, 0.4,0x808080)); // Walmart
-        this.walmart = new Cube(169.5, -129.5, 64, 120, 20, 0x2E82C1);
-        this.walmart.rotation.y = Math.PI;
-        this.add(this.walmart)
-
+        this.add(new Cube(169.5, -129.5, 64, 120, 20, 0x2E82C1))
         this.add(new Cube(52.5, -251.5, 70, 120, 10, 0xB3DBAC)); // Valle real
-    
-        this.restaurant = new Cube(79.5, -42.5, 50, 40, 15, 0x403244);
-        this.restaurant.rotation.y = -Math.PI/2;
-        this.add(this.restaurant)
-
+        this.add(new Cube(79.5, -42.5, 40, 50, 15, 0x403244))
         this.add(new Cube(151.5, -43.5, 100, 52, 0.4, 0x808080));
-
     }
 } 
 
@@ -428,7 +407,7 @@ class BuildingGroup extends THREE.Group {
         this.add(new Building(-42.5, 96.5, 50, 30, 10,"./textures/buildings/kinder_", 0xEF8F63));// Peak a bo
         this.add(new BuildingFloor(-42.5, 121.5, 50, 20, 0.4, "./textures/kinder_parking.png", 0x5AA897));
 
-        //this.cubes.push(new Cube(-42.5, 218.5, 50, 170, 15, 0x325288));// Tec
+        //this.add(new Building(-42.5, 218.5, 50, 170, 15,"./textures/buildings/tec_", 0x325288));// Tec
 
         this.soriana = new Building(-137, 92.5, 50, 120, 20,"./textures/buildings/soriana_",0xD43A36);
         this.soriana.rotation.y = Math.PI/2;
@@ -478,19 +457,15 @@ export default class Scenary extends THREE.LOD {
     constructor(size = 1000) {
         super();
 
-        this.axes = new Axes();
-
         this.low = new THREE.Group()
-        this.low.add(this.axes);
-        this.low.add(new Skybox(1200));
+        this.low.add(new Skybox(1000));
         this.low.add(new Intersection());
         this.low.add(new SidewalkGroup());
         this.low.add(new TrafficLightGroup());
         this.low.add(new CubeGroup());
 
         this.high = new THREE.Group()
-        this.high.add(new Skybox(1200));
-        this.high.add(this.axes);
+        this.high.add(new Skybox(1000));
         this.high.add(new Intersection());
         this.high.add(new SidewalkGroup());
         this.high.add(new TrafficLightGroup());
@@ -498,15 +473,5 @@ export default class Scenary extends THREE.LOD {
 
         this.addLevel(this.high, 70);
         this.addLevel(this.low, 120);
-
-
-
-        // this.axes = new Axes(size);
-        // this.skybox = new Skybox(50);
-        // this.intersection = new Intersection();
-        // this.sidewalks = new SidewalkGroup();
-        // this.trafficLights = new TrafficLightGroup();
-        // this.building = new BuildingGroup();
-
     }
 }

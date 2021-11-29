@@ -52,16 +52,10 @@
             scene.add(model);
 
             // CAMERA (PERSPECTIVE)
-            const fov = 60;    // Field ov view
-            const aspect = window.innerWidth / window.innerHeight;
-            const near = 0.01;
-            const far = 10000.0;
-            camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
-            camera.position.set(-100, 100, 300);
-            // CAMERA CONTROLS
-            orbitControls = new OrbitControls(camera, renderer.domElement);
-            //orbitControls.target = model.position;
-            orbitControls.update();
+            camera = new Camera();
+            camera.setPerspectiveView();
+            //camera.setCrossView();
+
 
             // SETUP STATS
             stats = new Stats();
@@ -81,6 +75,8 @@
                 scenary.floor.setVisible(value);
             });*/
 
+
+            
             guiSceneMenu.open();
 
             // MODEL-MENU
@@ -88,6 +84,22 @@
 
             // GUI MENU
             gui.add(model, "animate").setValue(model.rotate).name("Animate").listen().onChange(function(value) {});
+
+
+
+            // MENU CAMARA
+            const guiCameraMenu = gui.addFolder("CameraMenu");
+            // Opcion de vistas
+            var opView = { Vistas: 'Perspectiva'}
+            guiCameraMenu.add(opView, 'Vistas', ['Perspectiva', 'Superior', 'Cruce', 'Interior Auto']).onChange(updateView);
+            // Rotacion de la camara
+            guiCameraMenu.add(camera.orbitControls, "autoRotate").setValue(camera.orbitControls.autoRotate).name("Auto rotate").listen().onChange(function(value) {
+                camera.setAutoRotate(value);
+            });
+            // Inicializar vista a perspectiva
+            guiCameraMenu.add(camera, "reset").name("Reset");
+
+            guiCameraMenu.open();
 
             // DRAW SCENE IN A RENDER LOOP (ANIMATION)
             renderLoop();
@@ -101,10 +113,39 @@
             requestAnimationFrame(renderLoop);
         }
 
+        // ACTUALIZAR VISTAS
+        function updateView() {
+            const value = gui.__folders.CameraMenu.__controllers[0].object.Vistas;
+            switch(value) {
+                case 'Perspectiva': // Vista en Perspectiva
+                    camera.setPerspectiveView();
+                    break;
+                case 'Superior': // Vista superior  
+                    camera.setTopView();
+                    break; 
+                case 'Cruce': // Vista superior  
+                    camera.setCrossView();
+                    break; 
+                case 'Interior Auto': // Vista desde el interior del auto  
+                    camera.setInModelView(model); 
+                    break;
+                default:
+                    break;
+            }
+        }
+
         function updateScene() {
            if(model && model.animate) {
                model.position.z = model.position.z - 0.1;
            }
+
+           if (camera.orbitControls.autoRotate) {
+                camera.orbitControls.update();
+            }
+
+            if (camera.insideCar) {
+                camera.position.z = model.position.z - 0.2;
+            }
         }
 
         // EVENT LISTENERS & HANDLERS
@@ -114,84 +155,61 @@
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
             renderer.setSize(window.innerWidth, window.innerHeight);            
-        }, false);
+        }, false);      
 
 
-        /* 
-        // SEMAFORO
-        class BaseTrafficLight extends THREE.Mesh {
-            constructor(height = 5) {
-                const geometry = new THREE.CylinderGeometry( 0.15, 0.15, height, 32 ); // radius top, radius bottom, height, segments
-                const material = new THREE.MeshBasicMaterial( {color: 0x94B3FD} );
-                const cylinder = new THREE.Mesh( geometry, material );
-                super(geometry, material);
-                this.color = 0x94B3FD;
-                this.setOnFloor();
+        // CAMARA
+        class Camera extends THREE.PerspectiveCamera {
+            constructor(fov = 60, aspect = window.innerWidth/window.innerHeight, near = 0.1, far = 1000) {
+                super(fov, aspect, near, far);
+                this.insideCar = false;
+                this.orbitControls = new OrbitControls(this,renderer.domElement);
+                this.orbitControls.update();
+                this.position.set(-80, 100, 300);
             }
-        
-            getColor() {
-                return this.color;
-            }
-
-            setColor(hexColor) {
-                this.material.color.setHex(hexColor);
+            setPerspectiveView() {
+                this.insideCar = false;
+                this.position.set(-200, 250, 250);
+                this.orbitControls.target = new THREE.Vector3(0, 0, 0);
+                this.up.set(0, 1, 0)
+                this.orbitControls.update();
             }
 
-            setOnFloor() {
-                this.geometry.computeBoundingBox();
-                const bBox = this.geometry.boundingBox;
-                this.position.y = -bBox.min.y;
+            setTopView() {
+                this.insideCar = false;
+                this.position.set(0, 350, 0);
+                this.orbitControls.target = new THREE.Vector3(0, 0, 0);
+                this.up.set(-1, 0, 0)
+                this.orbitControls.update();
             }
+
+            setCrossView() {
+                this.insideCar = false;
+                this.position.set(0, 70, 0);
+                this.orbitControls.target = new THREE.Vector3(0, 0, 0);
+                this.up.set(-1, 0, 0)
+                this.orbitControls.update();
+            }
+
+            setInModelView(model) {
+                this.insideCar = true;
+                this.position.set(model.position.x, 4.5, model.position.z);
+                this.orbitControls.target = new THREE.Vector3(0, 0, -400);
+                this.up.set(0, 1, 0)
+                this.orbitControls.update();
+            }
+
+            setAutoRotate(value = false) {
+                this.orbitControls.autoRotate = value;
+            }
+
+            reset() {
+                this.insideCar = false;
+                this.setPerspectiveView();
+                this.setAutoRotate();
+            }
+
         }
-
-        class Sphere extends THREE.Group {
-            constructor(x = 0, y = 0, z = 0, radius = 0.2, color = 0xcc0000, wireColor = 0xffffff) {
-                super();
-                this.radius = radius;
-                this.color = color;
-                this.wireColor = color; //wireColor;
-                this.doubleSide = false;
-                this.rotate = false;
-                this.position.set(x, y, z);
-                // Geometría
-                const geometry = new THREE.SphereGeometry(radius, 32, 16);
-
-                // Material
-                const material = new THREE.MeshBasicMaterial({color});
-                const materialWire = new THREE.MeshBasicMaterial({wireframe: true, color: color});
-
-                // Low resolution
-                this.solid = new THREE.Mesh(geometry, material);
-                this.wire = new THREE.Mesh(geometry, materialWire);
-
-                this.add(this.solid);
-                this.add(this.wire);
-            }
-            setWireframe(value = true) {
-                this.solid.setVisible(value);
-            }
-            setColor(hexColor) {
-                this.color = hexColor;
-                this.solid.material.color.setHex(hexColor);
-            }
-            setWireColor(hexColor) {
-                this.wireColor = hexColor;
-                this.wire.material.color.setHex(hexColor);
-            }
-            setDoubleSide(value) {
-                this.doubleSide = value;
-                if(value) {
-                    this.solid.material.side = THREE.DoubleSide;
-                } else {
-                    this.solid.material.side = THREE.FrontSide;
-                }
-            }
-            setOnFloor() {
-                this.medium.solid.geometry.computeBoundingBox();
-                const bBox = this.medium.solid.geometry.boundingBox;
-                this.position.y = -bBox.min.y;
-            }
-        }*/        
 
     </script>
 </body>
