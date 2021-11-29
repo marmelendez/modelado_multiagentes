@@ -5,6 +5,8 @@ import Floor from './floor.js';
 
 // COMPONENTES DEL ESCENARIO
 // CALLE
+
+
 class Street extends THREE.Group {
     constructor(width = 100, height = 100, filename = "./textures/street.png", x = 0, z = 0, rX = 1, rY = 1) {
         super();
@@ -32,6 +34,32 @@ class Street extends THREE.Group {
     }
 }
 
+class Sidewalk extends THREE.Mesh {
+    constructor(x = 0, z = 0, turn = false, depth = 305, rX = 1, rY = 30) {
+        super();
+        this.geometry = new THREE.BoxGeometry(5, 0.3, depth);
+        const texture = new THREE.TextureLoader().load("./textures/sidewalk.jpeg");
+        texture.wrapS = THREE.RepeatWrapping;
+        texture.wrapT = THREE.RepeatWrapping;
+        texture.repeat.set(rX,rY);
+        this.position.set(x,0,z)
+        if (turn) {
+            this.rotation.y = Math.PI/2;
+        }
+        this.material = new THREE.MeshBasicMaterial({map: texture});
+        this.setOnFloor();
+    }
+
+    setVisible(value = true) {
+        this.visible = value;
+    }
+
+    setOnFloor() {
+        this.geometry.computeBoundingBox();
+        const bBox = this.geometry.boundingBox;
+        this.position.y = -bBox.min.y;
+    }
+}
 
 class SideWalks extends THREE.Group {
     constructor() {
@@ -96,33 +124,6 @@ class Intersection extends THREE.Group {
 
     setVisible(value = true) {
         this.visible = value;
-    }
-}
-
-class Sidewalk extends THREE.Mesh {
-    constructor(x = 0, z = 0, turn = false, depth = 305, rX = 1, rY = 30) {
-        super();
-        this.geometry = new THREE.BoxGeometry(5, 0.3, depth);
-        const texture = new THREE.TextureLoader().load("./textures/sidewalk.jpeg");
-        texture.wrapS = THREE.RepeatWrapping;
-        texture.wrapT = THREE.RepeatWrapping;
-        texture.repeat.set(rX,rY);
-        this.position.set(x,0,z)
-        if (turn) {
-            this.rotation.y = Math.PI/2;
-        }
-        this.material = new THREE.MeshBasicMaterial({map: texture});
-        this.setOnFloor();
-    }
-
-    setVisible(value = true) {
-        this.visible = value;
-    }
-
-    setOnFloor() {
-        this.geometry.computeBoundingBox();
-        const bBox = this.geometry.boundingBox;
-        this.position.y = -bBox.min.y;
     }
 }
 
@@ -246,45 +247,83 @@ class ScenaryComponent extends THREE.Group {
     }
 }
 
-class GasStation extends ScenaryComponent {
-    constructor(x = 0, z = 0, vertical = true, color = 0x808080, scaleFactor = 2, y = 0, objFileName = "./assets/obj/GasStation.obj") {
-        super(color, scaleFactor, objFileName, vertical, x, z, y);
+
+class TrafficLight extends THREE.Group {
+    constructor(x = 0, z = 0, color = 0x808080) {
+        super();
+        this.x = x;
+        this.z = z;
+        this.position.set(x, 0, z);
+        this.color = color;
+        this.wireColor = 0xffffff;
+        this.loadOBJModel("./assets/traffic.obj");
+    }
+    loadOBJModel(objFileName) {
+        const loader = new OBJLoader();// instantiate a loader
+        let component = this; // load a resource
+        loader.load(objFileName,
+            function (object) { 
+                // SOLID
+                object.traverse(function(child) {
+                    if (child.isMesh) {
+                        child.material = new THREE.MeshBasicMaterial({color: component.color});
+                    }
+                });
+                component.solid = object;
+                // WIRE
+                component.wire = object.clone();
+                component.wire.traverse(function(child) {
+                    if (child.isMesh) {
+                        child.material = new THREE.MeshBasicMaterial({wireframe: true, color: component.wireColor});
+                    }
+                });
+
+                component.scale.set(0.05, 0.05, 0.05);
+                // CHILDREN
+                component.add(component.solid);
+                component.add(component.wire);
+                component.setOnFloor();
+            },
+                // called when loading is in progresses
+            function (xhr) {
+                console.log((xhr.loaded / xhr.total * 100) + '% loaded');
+            },
+                // called when loading has errors
+            function (error) {
+                console.log( 'An error happened' + error );
+            }
+        );
+    }
+    setOnFloor() {
+        const bBox = new THREE.Box3();
+        bBox.setFromObject(this.solid);
+        this.position.y = -bBox.min.y;
+    }
+
+    setColor(color) {
+        this.mesh.material.color.setHex(color);
     }
 }
 
-class House extends ScenaryComponent {
-    constructor(x = 0, z = 0, vertical = true, color = 0x808080, scaleFactor = 0.3, y = 0, objFileName = "./assets/obj/house.obj") {
-        super(color, scaleFactor, objFileName, vertical, x, z, y);
-        this.rotation.x = Math.PI/2;
+class TrafficLights extends THREE.Group {
+    constructor() {
+        super();
+        this.traffic1 = new TrafficLight(-7, -13);
+        this.traffic2 = new TrafficLight(7, 13);
+        this.traffic2.rotation.y = Math.PI;
+        this.traffic3 = new TrafficLight(-13, 7);
+        this.traffic3.rotation.y = Math.PI/2;
+        this.traffic4 = new TrafficLight(13, -7);
+        this.traffic4.rotation.y = -Math.PI/2;
+
+
+        this.add(this.traffic1);
+        this.add(this.traffic2);
+        this.add(this.traffic3);
+        this.add(this.traffic4);
     }
 }
 
-class Gate extends ScenaryComponent {
-    constructor(x = 0, z = 0, vertical = true, color = 0x808080, scaleFactor = 0.15, y = 0, objFileName = "./assets/obj/fence.obj") {
-        super(color, scaleFactor, objFileName, vertical, x, z, y);
-    }
-
-    setRotation(rotate = true) {
-        if (rotate) {
-            this.rotation.y = 2*Math.PI;
-        } else {
-            this.rotation.y =Math.PI/2;
-        }
-    }
-}
-
-class Tree extends ScenaryComponent {
-    constructor(x = 0, z = 0, vertical = true, color = 0x32cd32, scaleFactor = 0.7, y = 0, objFileName = "./assets/obj/tree.obj") {
-        super(color, scaleFactor, objFileName, vertical, x, z, y);
-    }
-    setRotation(rotate = true) {
-        if (rotate) {
-            this.rotation.y = Math.PI;
-        } else {
-            this.rotation.y = Math.PI/2;
-        }
-    }
-}
 
 export default class Scenary extends THREE.Group {
     constructor(size = 1000) {
@@ -292,11 +331,13 @@ export default class Scenary extends THREE.Group {
         this.axes = new Axes(size);
         this.intersection = new Intersection();
         this.sidewalks = new SideWalks();
+        this.trafficLights = new TrafficLights();
         this.cubes = [];
         this.trees = [];
 
         this.add(this.intersection);
         this.add(this.sidewalks);
+        this.add(this.trafficLights);
 
 
          //SW - TEC - SORIANA
@@ -375,7 +416,7 @@ export default class Scenary extends THREE.Group {
         this.add(this.axes);
         //this.add(this.floor);
         for(let i = 0; i < this.cubes.length; i++) {
-            //this.add(this.cubes[i]);
+            this.add(this.cubes[i]);
         }
 
         for(let i = 0; i < this.trees.length; i++) {
