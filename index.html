@@ -30,6 +30,8 @@
       import Floor from "./floor.js";
       import Scenary from "./scenery.js";
       import Car from "./car.js";
+      import AmbientLight from "./ambientLight.js";
+      import DirectionalLight from "./directionalLight.js";
 
       let guiModelAMenu,
         renderer,
@@ -344,26 +346,7 @@
         false
       );
 
-      // LIGHTS
-      class AmbientLight extends THREE.AmbientLight {
-        constructor(color = 0xffffff, intensity = 1) {
-          super(color, intensity);
-          this.strColor = color;
-        }
-        setColor(strColor) {
-          this.color.setHex(strColor);
-        }
-      }
-      class DirectionalLight extends THREE.DirectionalLight {
-        constructor(color = 0xffffff, intensity = 0) {
-          super(color, intensity);
-          this.strColor = color;
-          this.position.set(0, 10, 0);
-        }
-        setColor(strColor) {
-          this.color.setHex(strColor);
-        }
-      }
+      
 
       // CAMARA
       class Camera extends THREE.PerspectiveCamera {
