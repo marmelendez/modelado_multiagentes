@@ -1,226 +1,196 @@
-import * as THREE from 'https://unpkg.com/three/build/three.module.js';
+import * as THREE from "https://unpkg.com/three/build/three.module.js";
+import { OBJLoader } from "https://cdn.jsdelivr.net/npm/three@0.117.1/examples/jsm/loaders/OBJLoader.js";
 
-// COMPONENTES DE AUTO
-        // Uso de Buffer Geometry
-        class TriangularPrism extends THREE.Mesh {
-            constructor() {
-                super();
-                const vertices = new Float32Array([
-                    0.2, 0, 0,
-                    -0.2, 0, 0,
-                    -0.2, 0, 0.5,
+// MODELO AUTO
+class CarHigh extends THREE.Group {
+  constructor(x = 0,z = 0,color = 0x9ddac6,direction = false,id = 0,objFileName = "./assets/car.obj") {
+    super();
+    this.car_id = id;
+    this.x = x;
+    this.z = z;
+    this.objFileName = objFileName;
+    this.position.set(x, 0, z);
+    this.color = color;
+    this.wireColor = 0xf7f7f7;
+    this.doubleSide = true;
+    this.rotate = false;
+    this.direction = direction;
+    this.loadOBJModel(objFileName);
+  }
+  loadOBJModel(objFileName) {
+    // instantiate a loader
+    const loader = new OBJLoader();
+    // load a resource
+    const model = this;
+    loader.load(
+      objFileName,
+      function (object) {
+        // SOLID
+        object.traverse(function (child) {
+          if (child.isMesh) {
+            child.material = new THREE.MeshBasicMaterial({
+              color: model.color,
+            });
+          }
+        });
+        model.solid = object;
 
-                    0.2, 1, 0,
-                    -0.2, 1, 0,
-                    -0.2, 1, 0.5,
-                ]);
+        // WIRE
+        model.wire = object.clone();
+        model.wire.traverse(function (child) {
+          if (child.isMesh) {
+            child.material = new THREE.MeshBasicMaterial({
+              wireframe: true,
+              color: model.wireColor,
+            });
+          }
+        });
 
-                const indices = [
-                    0, 1, 2, // Top
-                    5, 4, 3, // Bottom
-                    3, 1, 0, // Back
-                    1, 3, 4, // Back
-                    0, 2, 3, // Left
-                    5, 3, 2, // Left
-                    4, 2, 1, // Right
-                    2, 4, 5, // Right
-                ];
-
-
-                this.geometry = new THREE.BufferGeometry();
-                this.geometry.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
-                this.geometry.setIndex(indices);
-                this.material = new THREE.MeshBasicMaterial({color: 0x00008b});
-                this.rotation.x = -Math.PI/2;   
-            }
-            setColor(hexColor) {
-                this.material.color.setHex(hexColor);
-            }
+        if (model.direction) {
+          model.rotation.y = Math.PI * 2;
+        } else {
+          model.rotation.y = Math.PI;
         }
 
-        class Tire extends THREE.Mesh {
-            constructor() {
-                const geometry = new THREE.CylinderGeometry( 0.2, 0.2, 1.2, 32 ); // radius top, radius bottom, height, segments
-                const material = new THREE.MeshBasicMaterial( {color: 0x5a5a5a} );
-                const cylinder = new THREE.Mesh( geometry, material );
-                super(geometry, material);
-                this.rotation.x = Math.PI/2;    
-                this.color = 0x5a5a5a;
-            }
-        
-            getColor() {
-                return this.color;
-            }
+        model.scale.set(0.5, 0.5, 0.5);
+        // CHILDREN
+        model.add(model.solid);
+        model.add(model.wire);
+        model.setOnFloor();
+      },
 
-            setColor(hexColor) {
-                this.material.color.setHex(hexColor);
-            }
+      function (xhr) {
+        // called when loading is in progresses
+        console.log((xhr.loaded / xhr.total) * 100 + "% loaded");
+      },
+
+      function (error) {
+        // called when loading has errors
+        console.log("An error happened" + error);
+      }
+    );
+  }
+
+  setMatWireframe(value) {
+    this.wire.visible = value;
+  }
+
+  setMatColor(value) {
+    this.solid.visible = value;
+  }
+
+  setColor(hexColor) {
+    this.color = hexColor;
+    this.solid.traverse(function (child) {
+      if (child.isMesh) {
+        child.material.color.setHex(hexColor);
+      }
+    });
+  }
+  setWireColor(hexColor) {
+    this.wireColor = hexColor;
+    this.wire.traverse(function (child) {
+      if (child.isMesh) {
+        child.material.color.setHex(hexColor);
+      }
+    });
+  }
+  setDoubleSide(value) {
+    this.doubleSide = value;
+    this.solid.traverse(function (child) {
+      if (child.isMesh) {
+        if (value) {
+          child.material.side = THREE.DoubleSide;
+        } else {
+          child.material.side = THREE.FrontSide;
         }
+      }
+    });
+  }
+  setOnFloor() {
+    const bBox = new THREE.Box3();
+    bBox.setFromObject(this.solid);
+    this.position.y = -bBox.min.y;
+  }
 
-        class SideWindow extends THREE.Mesh {
-            constructor() {
-                const geometry = new THREE.BoxBufferGeometry(1, 0.3, 1.1); // width, height, depth
-                const material = new THREE.MeshBasicMaterial( {color: 0xdce9f5} );
-                super(geometry, material);
-                this.color = 0xdce9f5;
-            }
-            getColor() {
-                return this.color;
-            }
+  setPosition(x, z) {
+    this.x = x;
+    this.z = z;
+    this.position.set(x, 0, z);
+  }
+}
 
-            setColor(hexColor) {
-                this.material.color.setHex(hexColor);
-            }
-        }
 
-        class FrontWindow extends THREE.Mesh {
-            constructor() {
-                const geometry = new THREE.BoxBufferGeometry(0.1, 0.3, .8);
-                const material = new THREE.MeshBasicMaterial( {color: 0xdce9f5} );
-                super(geometry, material);
-            }
-            setColor(hexColor) {
-                this.material.color.setHex(hexColor);
-            }
-        }
+class CarLow extends THREE.Group {
+    constructor(x, z, color) {
+        super();
+        this.color = color;  // white
+        const geometry = new THREE.BoxGeometry(2, 2, 4);
+        this.materialColor = new THREE.MeshBasicMaterial({color: this.color});
+        this.materialWire = new THREE.LineBasicMaterial({color: 0xffffff});
+        this.mesh = new THREE.Mesh(geometry, this.materialColor);
+        this.lines = new THREE.Line(geometry, this.materialWire);
+        // CHILDREN
+        this.add(this.mesh);
+        this.add(this.lines);
+        this.position.set(x, 0, z);
+        this.setOnFloor();
+    }
 
-        class CarBottom extends THREE.Mesh {
-            constructor() {
-                const geometry = new THREE.BoxBufferGeometry(2, 0.5, 1);
-                const material = new THREE.MeshBasicMaterial( {color: 0x00008b} ); //00008b
-                super(geometry, material);
-                this.color = 0x00008b;
-            }
-            getColor() {
-                return this.color;
-            }
+    setMatWireframe(value) {
+        this.lines.visible = value;
+    }
+    setMatColor(value) {
+        this.mesh.visible = value;
+    }
+    
+    setColor(hexColor) {
+        this.mesh.material.color.setHex(hexColor);
+    }
 
-            setColor(hexColor) {
-                this.material.color.setHex(hexColor);
-            }
-        }
+    setWireColor(hexColor) {
+        this.lines.material.color.setHex(hexColor);
+    }
+    setOnFloor() {
+        const bBox = new THREE.Box3();
+        bBox.setFromObject(this);
+        this.position.y = -bBox.min.y;
+    }
+    
+} 
 
-        class CarTop extends THREE.Mesh {
-            constructor() {
-                const geometry = new THREE.BoxBufferGeometry(1.2, 0.4, 1);
-                const material = new THREE.MeshBasicMaterial( {color: 0xf1f1f1} );
-                super(geometry, material);
-                this.color = 0xf1f1f1;
-            }
-            getColor() {
-                return this.color;
-            }
+export default class Car extends THREE.LOD {
+  constructor(x = 0, z = 0, color = 0x9ddac6) {
+    super();
 
-            setColor(hexColor) {
-                this.material.color.setHex(hexColor);
-            }
-        }
+    this.low = new CarLow(x, z, color);
+    this.high = new CarHigh(x, z, color);
 
-        // CLASE AUTO, AGRUPA COMPONENTES 
-        // Uso de THREE.Group
-        export default class ClaseCar extends THREE.Group {
-            constructor(x = 0, z = 0) {
-                super();
-                this.x = x;
-                this.z = z;
-                this.material = false;
-                this.scaleFactor = 5;
-                this.rotate = true;
+    this.addLevel(this.high, 50);
+    this.addLevel(this.low, 75);
+  }
 
-                // Llantas traseras
-                this.rearTires = new Tire();
-                this.rearTires.position.y = 0.1;
-                this.rearTires.position.x = -0.6;
-                this.tiresColor = this.rearTires.getColor();
+  setVisible(value) {
+    this.visible = value;
+  }
 
-                // Llantas frontales
-                this.frontTires = new Tire();
-                this.frontTires.position.y = 0.1;
-                this.frontTires.position.x = 0.6;
+  setMatWireframe(value) {
+    this.low.setMatWireframe(value);
+    this.high.setMatWireframe(value);
+  }
 
-                // Parte de abajo
-                this.carBottom = new CarBottom();
-                this.carBottom.position.y = 0.3;
-                this.carBottom.position.x = 0;
-                this.carBottomColor = this.carBottom.getColor();
+  setMatColor(value) {
+    this.low.setMatColor(value);
+    this.high.setMatColor(value);
+  }
 
-                // Parte enfrente
-                this.frontPart = new TriangularPrism();
-                this.frontPart.position.y = 0.05;
-                this.frontPart.position.x = 1.2;
-                this.frontPart.position.z = 0.5;
+  setColor(hexColor) {
+    this.low.setColor(hexColor);
+    this.high.setColor(hexColor);
+  }
 
-                // Parte de arriba
-                this.carTop = new CarTop();
-                this.carTop.position.y = 0.75;
-                this.carTop.position.x = -0.1;
-                this.carTopColor = this.carTop.getColor();
-
-                // Ventanas de lados
-                this.sideWindow = new SideWindow();
-                this.sideWindow.position.y = 0.75;
-                this.sideWindow.position.x = -0.1;
-                this.windowsColor = this.sideWindow.getColor();
-
-                // Ventana frontal
-                this.frontWindow = new FrontWindow();
-                this.frontWindow.position.y = 0.75;
-                this.frontWindow.position.x = .5;
-
-                this.add(this.rearTires);
-                this.add(this.frontTires);
-                this.add(this.carBottom);
-                this.add(this.frontPart);
-                this.add(this.carTop);
-                this.add(this.sideWindow);
-                this.add(this.frontWindow);
-
-                this.setScale(this.scaleFactor);
-                this.rotation.y = Math.PI /2;
-                this.animate = false;
-                this.position.set(x, 0, z);
-            }
-
-            // WIREFRAME
-            setWireframe(value) {
-                this.rearTires.material.wireframe = value;
-                this.frontTires.material.wireframe = value;
-                this.carBottom.material.wireframe = value;
-                this.frontPart.material.wireframe = value;
-                this.carTop.material.wireframe = value;
-                this.sideWindow.material.wireframe = value;
-                this.frontWindow.material.wireframe = value;
-            }
-
-            // COLOR
-            setCarBottomColor(hexColor) {
-                this.color = hexColor;
-                this.carBottom.setColor(this.color);
-                this.frontPart.setColor(this.color);
-            }
-            
-            setCarTopColor(hexColor) {
-                this.carTop.setColor(hexColor);
-            }
-            
-            setWindowsColor(hexColor) {
-                this.sideWindow.setColor(hexColor);
-                this.frontWindow.setColor(hexColor);
-            }
-            
-            setTiresColor(hexColor) {
-                this.rearTires.setColor(hexColor);
-                this.frontTires.setColor(hexColor);
-            }
-
-            // ESCALAR
-            setScale(value) {
-                this.scale.set(value, value, value);
-            }
-
-            // ROTAR
-            updateRotation(value) {
-                this.rotate = value;
-                renderLoop();
-            }
-        }
+  setWireColor(hexColor) {
+    this.low.setWireColor(hexColor);
+    this.high.setWireColor(hexColor);
+  }
+}
