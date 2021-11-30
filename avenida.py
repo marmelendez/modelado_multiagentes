@@ -4,6 +4,10 @@ import math
 import random
 import json
 
+# inicializa un semafor en verde con vuelta a la izq
+# Se apaga para vuelta y se enciende el de lado contrario para enfrente
+# Se apaga el verde del semaforo incial y el
+
 
 class Semaphore(ap.Agent):
 
@@ -23,8 +27,11 @@ class Semaphore(ap.Agent):
         self.yellow_duration = 1    # Duracion del semaforo en amarillo
         self.red_duration = 6       # Duracion del semaforo en rojo
 
+        self.type = 0
+
     def update(self):
         # Actualizar el estado del semaforo
+
         self.state_time += self.step_time
 
         if self.state == 0:
@@ -86,6 +93,15 @@ class Car(ap.Agent):
         # Inicializar valor para carro que puede chocar
         crashed_car = self
 
+        # Guardar carro más cercano de todos (no solo en tu misma direccion)
+        if (self.model.cars[0] != self):
+            closest_car = self.model.cars[0]
+        else:
+            closest_car = self.model.cars[1]
+
+        p2 = self.model.avenue.positions[closest_car]
+        closest_car_distance = math.sqrt((p[0]-p2[0])**2 + (p[1]-p2[1])**2)
+
         for car in self.model.cars:
             if car != self:
                 # Verifica si el carro va en la misma direccion (Producto punto entre dos vectores positivo significa que apuntan a la misma direccion)
@@ -98,9 +114,21 @@ class Car(ap.Agent):
                     (p2[1]-p[1])*self.direction[1]
 
                 # Verifica si el carro esta dentro del mismo carril
-                dot_p3 = p2[0]-p[0]
+                dot_p3 = True
+                if (self.direction[0] >= 0.5 and car.direction[0] >= 0.5 or self.direction[0] <= -0.5 and car.direction[0] <= -0.5):
+                    if(abs(p[1] - p2[1]) >= 60):
+                        dot_p3 = False
+                elif(self.direction[1] >= 0.5 and car.direction[1] >= 0.5 or self.direction[1] <= -0.5 and car.direction[1] < -0.5):
+                    if(abs(p[0] - p2[0]) >= 60):
+                        dot_p3 = False
 
-                if dot_p1 > 0 and dot_p2 > 0 and dot_p3 == 0:
+                curr_car_distance = math.sqrt(
+                    (p[0]-p2[0])**2 + (p[1]-p2[1])**2)
+                if(curr_car_distance < closest_car_distance):
+                    closest_car_distance = curr_car_distance
+                    closest_car = car
+
+                if dot_p1 > 0 and dot_p2 > 0 and dot_p3:
                     d = math.sqrt((p[0]-p2[0])**2 + (p[1]-p2[1])**2)
 
                     if min_car_distance > d:
@@ -131,12 +159,19 @@ class Car(ap.Agent):
 
         # Actualiza la velocidad del auto
 
-        # Carro choca con otro
-        if min_car_distance < 20:
+        # Carro choca con caulquier otro carro
+        if (closest_car_distance < 40):
             self.speed = 0
-            self.state = 1
+            self.state = 0
+            closest_car.speed = 0
+            closest_car.state = 0
+
+        # Carro choca con otro de su carril
+        if min_car_distance < 40:
+            self.speed = 0
+            self.state = 0
             crashed_car.speed = 0
-            crashed_car.state = 1
+            crashed_car.state = 0
 
         # Se encontro un carro adelante cercano -> frenar mucho
         elif min_car_distance < 70:
@@ -146,26 +181,31 @@ class Car(ap.Agent):
         elif min_car_distance < 150:
             self.speed = np.maximum(self.speed - 80*self.step_time, 0)
 
-        # Semaforo cercano y en amarillo -> acelerar
-        elif min_semaphore_distance < 60 and semaphore_state == 1:
+        # Semaforo en rojo y se paso el cruce -> acelerar
+        elif min_semaphore_distance < 400 and (semaphore_state == 1 or semaphore_state == 2):
             self.speed = np.minimum(
-                self.speed + 5*self.step_time, self.max_speed)
-
-        # Semaforo lejano y en amarillo -> frenar
-        elif min_semaphore_distance < 120 and semaphore_state == 1:
-            self.speed = np.maximum(self.speed - 20*self.step_time, 0)
+                self.speed + 10*self.step_time, self.max_speed)
 
         # Semaforo en rojo o amarillo, no se encontro carro enfrente, el carro tiene poca velocidad
-        elif self.speed <= 10 and min_car_distance == 1000000 and (semaphore_state == 2 or semaphore_state == 1):
+        elif self.speed <= 20 and min_car_distance > 50 and (semaphore_state == 2 or semaphore_state == 1):
             # Si esta lejos del semaforo -> acelerar poco
-            if(min_semaphore_distance > 60 and self.speed != 10):
-                self.speed = np.minimum(self.speed + 50*self.step_time, 10)
+            if(min_semaphore_distance > 460 and self.speed != 20):
+                self.speed = np.minimum(self.speed + 5*self.step_time, 30)
             # Si esta cerca del semaforo -> frenar mucho
             else:
-                self.speed = np.maximum(self.speed - 250*self.step_time, 0)
+                self.speed = np.maximum(self.speed - 200*self.step_time, 0)
+
+        # Semaforo cercano y en amarillo -> acelerar
+        elif min_semaphore_distance < 540 and semaphore_state == 1:
+            self.speed = np.minimum(
+                self.speed + 10*self.step_time, self.max_speed)
+
+        # Semaforo lejano y en amarillo -> frenar
+        elif min_semaphore_distance < 600 and semaphore_state == 1:
+            self.speed = np.maximum(self.speed - 80*self.step_time, 0)
 
         # Semaforo en rojo y lejano -> frenar medio
-        elif min_semaphore_distance < 200 and semaphore_state == 2:
+        elif min_semaphore_distance < 600 and semaphore_state == 2:
             self.speed = np.maximum(self.speed - 80*self.step_time, 0)
 
         # Otro caso -> acelerar poco
@@ -184,44 +224,100 @@ class AvenueModel(ap.Model):
         self.cars = ap.AgentList(self, self.p.cars, Car)
         self.cars.step_time = self.p.step_time
 
-        c_north = int(self.p.cars/2)
-        c_south = self.p.cars - c_north
+        # c_north = int(self.p.cars / 2)
+        # c_south = int(self.p.cars - c_north)
 
+        car_number = int(self.p.cars/4)
+        c_north = int(car_number)
+        c_south = int(car_number)
+        c_east = int(car_number)
+        c_west = int(self.p.cars - (3 * car_number))
+
+        # Direcciones de carros
         for k in range(c_north):
             self.cars[k].direction = [0, 1]
 
         for k in range(c_south):
             self.cars[k+c_north].direction = [0, -1]
 
-        self.semaphores = ap.AgentList(self, 2, Semaphore)
+        for k in range(c_east):
+            self.cars[k+c_north + c_south].direction = [1, 0]
+
+        for k in range(c_west):
+            self.cars[k + int(self.p.cars) - c_west].direction = [-1, 0]
+
+        self.semaphores = ap.AgentList(self, 4, Semaphore)
         self.semaphores.step_time = self.p.step_time
         self.semaphores.green_duration = self.p.green
         self.semaphores.yellow_duration = self.p.yellow
         self.semaphores.red_duration = self.p.red
+
         self.semaphores[0].direction = [0, 1]
         self.semaphores[1].direction = [0, -1]
+        self.semaphores[2].direction = [1, 0]
+        self.semaphores[3].direction = [-1, 0]
+
+        self.semaphores[0].type = 0
+        self.semaphores[1].type = 0
+        self.semaphores[2].type = 1
+        self.semaphores[3].type = 1
+
+        for semaphore in self.semaphores:
+            if (semaphore.type == 1):
+                semaphore.state = 2
+                semaphore.green_duration = self.p.red - self.p.yellow
+                semaphore.red_duration = self.p.green + self.p.yellow
 
         # Inicializa el entorno
-        self.avenue = ap.Space(self, shape=[300, self.p.size], torus=True)
+        self.avenue = ap.Space(
+            self, shape=[self.p.size, self.p.size], torus=True)
 
         # Agrega los semaforos al entorno
         self.avenue.add_agents(self.semaphores, random=True)
-        self.avenue.move_to(self.semaphores[0], [65, self.p.size*0.5 + 60])
-        self.avenue.move_to(self.semaphores[1], [235, self.p.size*0.5 - 60])
+        self.avenue.move_to(self.semaphores[0], [
+                            self.p.size*0.5 + 85, self.p.size*0.5 - 200])
+        self.avenue.move_to(self.semaphores[1], [
+                            self.p.size*0.5 - 85, self.p.size*0.5 + 200])
+        self.avenue.move_to(self.semaphores[2], [
+                            self.p.size*0.5 - 200, self.p.size*0.5 - 85])  # Derecho
+        self.avenue.move_to(self.semaphores[3], [
+                            self.p.size*0.5 + 200, self.p.size*0.5 + 85])
 
         # Agrega los autos al entorno
         self.avenue.add_agents(self.cars, random=True)
-        for k in range(int(c_north/2)):
-            self.avenue.move_to(self.cars[k], [200, 75*(k+1)])
-        for k in range(int(c_north/2), c_north, 1):
-            self.avenue.move_to(self.cars[k], [270, 75*(k+3 - (c_north/2))])
 
+        # Acomodar carros en carriles
+
+        # Carril horizontal derecho
+        for k in range(int(c_north/2)):
+            self.avenue.move_to(
+                self.cars[k], [self.p.size*0.5 - 50, 75*(k+1)])
+        for k in range(int(c_north/2), c_north, 1):
+            self.avenue.move_to(
+                self.cars[k], [self.p.size*0.5 - 120, 75*(k+3 - (c_north/2))])
+        # Carril horizontal izquierdo
         for k in range(int(c_south/2)):
             self.avenue.move_to(
-                self.cars[k+c_north], [100, self.p.size - (k+1)*75])
+                self.cars[k+c_north], [self.p.size*0.5 + 50, self.p.size - (k+1)*75])
         for k in range(int(c_south/2), c_south, 1):
             self.avenue.move_to(
-                self.cars[k+c_north], [30, self.p.size - (k+2 - (c_south/2))*75])
+                self.cars[k+c_north], [self.p.size*0.5 + 120, self.p.size - (k+2)*80])
+
+        # Carril vertical derecho
+        for k in range(int(c_east/2)):
+            self.avenue.move_to(
+                self.cars[k+c_south+c_north], [75*(k+1), self.p.size*0.5 + 50])
+        for k in range(int(c_east/2), c_east, 1):
+            self.avenue.move_to(
+                self.cars[k+c_south+c_north], [75*(k+3 - (c_east/2)), self.p.size*0.5 + 120])
+
+        # Carril vertical izquierdo
+        for k in range(int(c_west/2)):
+            self.avenue.move_to(
+                self.cars[k + int(self.p.cars) - c_west], [self.p.size - 85*(k+1), self.p.size*0.5 - 50])
+        for k in range(int(c_west/2), c_west, 1):
+            self.avenue.move_to(
+                self.cars[k + int(self.p.cars) - c_west], [self.p.size - 100*(k+3), self.p.size*0.5 - 120])
 
         # Frame counter
         self.frames = 0
@@ -274,7 +370,12 @@ class AvenueModel(ap.Model):
                 'id': k + model.p.cars,
                 'state': self.semaphores[k].state
             })
-            self.semaphores[k].green_duration = green_duration
+            if (self.semaphores[k].type == 0):
+                self.semaphores[k].green_duration = green_duration
+            else:
+                self.semaphores[k].red_duration = green_duration + \
+                    self.p.yellow
+                self.semaphores[k].green_duration = self.p.red - self.p.yellow
 
         self.data['frames'].append({
             'frame': self.frames,
