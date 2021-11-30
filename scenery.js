@@ -831,7 +831,7 @@ export default class Scenary extends THREE.LOD {
     this.high.add(new BuildingGroup());
 
     this.addLevel(this.high, 100);
-    this.addLevel(this.low, 150);
+    this.addLevel(this.low, 200);
   }
 
   setTexture() {
