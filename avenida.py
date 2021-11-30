@@ -182,30 +182,30 @@ class Car(ap.Agent):
             self.speed = np.maximum(self.speed - 80*self.step_time, 0)
 
         # Semaforo en rojo y se paso el cruce -> acelerar
-        elif min_semaphore_distance < 400 and (semaphore_state == 1 or semaphore_state == 2):
+        elif min_semaphore_distance < 600 and (semaphore_state == 1 or semaphore_state == 2):
             self.speed = np.minimum(
                 self.speed + 10*self.step_time, self.max_speed)
 
         # Semaforo en rojo o amarillo, no se encontro carro enfrente, el carro tiene poca velocidad
         elif self.speed <= 20 and min_car_distance > 50 and (semaphore_state == 2 or semaphore_state == 1):
             # Si esta lejos del semaforo -> acelerar poco
-            if(min_semaphore_distance > 460 and self.speed != 20):
+            if(min_semaphore_distance > 660 and self.speed != 20):
                 self.speed = np.minimum(self.speed + 5*self.step_time, 30)
             # Si esta cerca del semaforo -> frenar mucho
             else:
                 self.speed = np.maximum(self.speed - 200*self.step_time, 0)
 
         # Semaforo cercano y en amarillo -> acelerar
-        elif min_semaphore_distance < 540 and semaphore_state == 1:
+        elif min_semaphore_distance < 740 and semaphore_state == 1:
             self.speed = np.minimum(
                 self.speed + 10*self.step_time, self.max_speed)
 
         # Semaforo lejano y en amarillo -> frenar
-        elif min_semaphore_distance < 600 and semaphore_state == 1:
+        elif min_semaphore_distance < 800 and semaphore_state == 1:
             self.speed = np.maximum(self.speed - 80*self.step_time, 0)
 
         # Semaforo en rojo y lejano -> frenar medio
-        elif min_semaphore_distance < 600 and semaphore_state == 2:
+        elif min_semaphore_distance < 800 and semaphore_state == 2:
             self.speed = np.maximum(self.speed - 80*self.step_time, 0)
 
         # Otro caso -> acelerar poco
@@ -275,13 +275,13 @@ class AvenueModel(ap.Model):
         # Agrega los semaforos al entorno
         self.avenue.add_agents(self.semaphores, random=True)
         self.avenue.move_to(self.semaphores[0], [
-                            self.p.size*0.5 + 85, self.p.size*0.5 - 200])
+                            self.p.size*0.5 + 85, self.p.size*0.5 - 300])
         self.avenue.move_to(self.semaphores[1], [
-                            self.p.size*0.5 - 85, self.p.size*0.5 + 200])
+                            self.p.size*0.5 - 85, self.p.size*0.5 + 300])
         self.avenue.move_to(self.semaphores[2], [
-                            self.p.size*0.5 - 200, self.p.size*0.5 - 85])  # Derecho
+                            self.p.size*0.5 - 300, self.p.size*0.5 - 85])  # Derecho
         self.avenue.move_to(self.semaphores[3], [
-                            self.p.size*0.5 + 200, self.p.size*0.5 + 85])
+                            self.p.size*0.5 + 300, self.p.size*0.5 + 85])
 
         # Agrega los autos al entorno
         self.avenue.add_agents(self.cars, random=True)
@@ -289,35 +289,48 @@ class AvenueModel(ap.Model):
         # Acomodar carros en carriles
 
         # Carril horizontal derecho
-        for k in range(int(c_north/2)):
+        for k in range(int(c_north/3)):
             self.avenue.move_to(
                 self.cars[k], [self.p.size*0.5 - 50, 75*(k+1)])
-        for k in range(int(c_north/2), c_north, 1):
+        for k in range(int(c_north/3), int(c_north/3) * 2, 1):
             self.avenue.move_to(
                 self.cars[k], [self.p.size*0.5 - 120, 75*(k+3 - (c_north/2))])
+        for k in range(int(c_north/3) * 2, c_north, 1):
+            self.avenue.move_to(
+                self.cars[k], [self.p.size*0.5 - 190, 75*(k+3 - (c_north/2))])
+
         # Carril horizontal izquierdo
-        for k in range(int(c_south/2)):
+        for k in range(int(c_south/3)):
             self.avenue.move_to(
                 self.cars[k+c_north], [self.p.size*0.5 + 50, self.p.size - (k+1)*75])
-        for k in range(int(c_south/2), c_south, 1):
+        for k in range(int(c_south/3), int(c_south/3) * 2, 1):
             self.avenue.move_to(
                 self.cars[k+c_north], [self.p.size*0.5 + 120, self.p.size - (k+2)*80])
+        for k in range(int(c_south/3) * 2, c_south, 1):
+            self.avenue.move_to(
+                self.cars[k+c_north], [self.p.size*0.5 + 190, self.p.size - (k+2)*80])
 
         # Carril vertical derecho
-        for k in range(int(c_east/2)):
+        for k in range(int(c_east/3)):
             self.avenue.move_to(
                 self.cars[k+c_south+c_north], [75*(k+1), self.p.size*0.5 + 50])
-        for k in range(int(c_east/2), c_east, 1):
+        for k in range(int(c_east/3), int(c_east/3) * 2, 1):
             self.avenue.move_to(
-                self.cars[k+c_south+c_north], [75*(k+3 - (c_east/2)), self.p.size*0.5 + 120])
+                self.cars[k+c_south+c_north], [75*(k+3), self.p.size*0.5 + 120])
+        for k in range(int(c_east/3) * 2, c_east, 1):
+            self.avenue.move_to(
+                self.cars[k+c_south+c_north], [75*(k+3), self.p.size*0.5 + 190])
 
         # Carril vertical izquierdo
-        for k in range(int(c_west/2)):
+        for k in range(int(c_west/3)):
             self.avenue.move_to(
                 self.cars[k + int(self.p.cars) - c_west], [self.p.size - 85*(k+1), self.p.size*0.5 - 50])
-        for k in range(int(c_west/2), c_west, 1):
+        for k in range(int(c_west/3), int(c_west/3) * 2, 1):
             self.avenue.move_to(
-                self.cars[k + int(self.p.cars) - c_west], [self.p.size - 100*(k+3), self.p.size*0.5 - 120])
+                self.cars[k + int(self.p.cars) - c_west], [self.p.size - 100*(k+1), self.p.size*0.5 - 120])
+        for k in range(int(c_west/3) * 2, c_west, 1):
+            self.avenue.move_to(
+                self.cars[k + int(self.p.cars) - c_west], [self.p.size - 100*(k+1), self.p.size*0.5 - 190])
 
         # Frame counter
         self.frames = 0
@@ -406,7 +419,7 @@ parameters = {
     'green': 30,          # Duracion de la luz verde
     'yellow': 3,         # Duracion de la luz amarilla
     'red': 24,           # Duracion de la luz roja
-    'cars': 20,          # Numero de autos en la simulacion
+    'cars': 30,          # Numero de autos en la simulacion
     'steps': 2500,       # Numero de pasos de la simulacion
 }
 
