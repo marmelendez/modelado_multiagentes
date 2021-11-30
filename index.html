@@ -43,6 +43,7 @@
         ambientLight,
         directionalLight,
         cars = [],
+        simulation,
         dataReady = false;
       window.visible = true;
       window.wireframe = true;
@@ -88,7 +89,43 @@
 
         // GUI
         gui = new dat.GUI();
+        
+        // SIMULATION PARAMETERS
+        simulation = new Simulation();
 
+        const guiSimulationMenu = gui.addFolder("Simulation Menu");
+        
+        guiSimulationMenu.add(simulation, "step_time").name("Step size").onChange(function (value) {  
+            simulation.step_size = value;
+        });
+        
+        guiSimulationMenu.add(simulation, "size").name("Size").onChange(function (value) {  
+            simulation.size = value;
+        });
+        
+        guiSimulationMenu.add(simulation, "green").name("Green").onChange(function (value) {  
+            simulation.green = value;
+        });
+        
+        guiSimulationMenu.add(simulation, "yellow").name("Yellow").onChange(function (value) {  
+            simulation.yellow = value;
+        });
+        
+        guiSimulationMenu.add(simulation, "red").name("Red").onChange(function (value) {  
+            simulation.red = value;
+        });
+        
+        guiSimulationMenu.add(simulation, "cars").name("Cars").onChange(function (value) {  
+            simulation.cars = value;
+        });
+        
+        guiSimulationMenu.add(simulation, "steps").name("Steps").onChange(function (value) {  
+            simulation.steps = value;
+        });
+
+        guiSimulationMenu.add(simulation, "to_json").name("GENERATE SIMULATION");
+
+        guiSimulationMenu.open();
         // SCENE-MENU
         const guiSceneMenu = gui.addFolder("SceneMenu");
         var text = { Material: "Texturas" };
@@ -107,7 +144,7 @@
         var opView = { Vistas: "Perspectiva cruce" };
         guiCameraMenu.add(opView, "Vistas", ["Perspectiva","Perspectiva cruce","Superior","Cruce","Interior Auto",]).onChange(updateView);
         // Rotacion de la camara
-        guiCameraMenu.add(camera.orbitControls, "autoRotate").setValue(camera.orbitControls.autoRotate).name("Auto rotate").listen().onChange(function (value) {  
+        guiCameraMenu.add(camera.orbitControls, "autoRotate").setValue(camera.orbitControls.autoRotate).name("Auto rotate").onChange(function (value) {  
             camera.setAutoRotate(value);
         });
         // Inicializar vista a perspectiva
@@ -236,6 +273,8 @@
             }
         });
 
+        //SIMULATION MENU
+
         // DRAW SCENE IN A RENDER LOOP (ANIMATION)
         renderLoop();
       }
@@ -344,6 +383,29 @@
         false
       );
 
+      class Simulation {
+        constructor(step_time = 0.1, size = 1000, green = 5, yellow = 0, red = 5, cars = 10, steps = 1000){
+          this.step_time = step_time;
+          this.size = size;
+          this.green = green;
+          this.yellow = yellow;
+          this.red = red;
+          this.cars = cars;
+          this.steps = steps;
+        }
+        to_json(){
+          let simulation_json = JSON.stringify(simulation);
+          console.log(simulation_json)
+          this.download(simulation_json, 'parameters.json', 'application/json');
+        }
+        download(content, fileName, contentType){
+          var a = document.createElement("a");
+          var file = new Blob([content], {type: contentType});
+          a.href = URL.createObjectURL(file);
+          a.download = fileName;
+          a.click();
+        }
+      }
       // LIGHTS
       class AmbientLight extends THREE.AmbientLight {
         constructor(color = 0xffffff, intensity = 1) {
@@ -430,5 +492,19 @@
         }
       }
     </script>
+    <!-- <div class="form-popup" id="myForm">
+      <form class="form-container">
+        <h1>Login</h1>
+    
+        <label for="email"><b>Email</b></label>
+        <input type="text" placeholder="AAAAAAAAAA" name="email" required>
+    
+        <label for="psw"><b>Password</b></label>
+        <input type="password" placeholder="Enter Password" name="psw" required>
+    
+        <button type="submit" class="btn">Login</button>
+        <button type="button" class="btn cancel" onclick="closeForm()">Close</button>
+      </form>
+    </div> -->
   </body>
 </html>
