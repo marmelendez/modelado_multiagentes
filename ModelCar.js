@@ -2,25 +2,26 @@ import * as THREE from "https://unpkg.com/three/build/three.module.js";
 import { OBJLoader } from "https://cdn.jsdelivr.net/npm/three@0.117.1/examples/jsm/loaders/OBJLoader.js";
 
 // MODELO AUTO
+// HIGH LOD
+// Uso de archivo obj para el modelo de alto nivel de detalle
 class CarHigh extends THREE.Group {
-  constructor(x = 0,z = 0,color = 0x9ddac6,direction = false,id = 0,objFileName = "./assets/car.obj") {
+  constructor(x = 0, z = 0, color = 0x9ddac6, direction = false, id = 0, objFileName = "./assets/car.obj") {
     super();
     this.car_id = id;
     this.x = x;
     this.z = z;
     this.objFileName = objFileName;
-    this.position.set(x, 0, z);
     this.color = color;
     this.wireColor = 0xf7f7f7;
     this.doubleSide = true;
     this.rotate = false;
     this.direction = direction;
+
+    this.position.set(x, 0, z);
     this.loadOBJModel(objFileName);
   }
   loadOBJModel(objFileName) {
-    // instantiate a loader
     const loader = new OBJLoader();
-    // load a resource
     const model = this;
     loader.load(
       objFileName,
@@ -55,12 +56,10 @@ class CarHigh extends THREE.Group {
       },
 
       function (xhr) {
-        // called when loading is in progresses
         console.log((xhr.loaded / xhr.total) * 100 + "% loaded");
       },
 
       function (error) {
-        // called when loading has errors
         console.log("An error happened" + error);
       }
     );
@@ -82,6 +81,7 @@ class CarHigh extends THREE.Group {
       }
     });
   }
+  
   setWireColor(hexColor) {
     this.wireColor = hexColor;
     this.wire.traverse(function (child) {
@@ -90,6 +90,7 @@ class CarHigh extends THREE.Group {
       }
     });
   }
+
   setDoubleSide(value) {
     this.doubleSide = value;
     this.solid.traverse(function (child) {
@@ -102,6 +103,7 @@ class CarHigh extends THREE.Group {
       }
     });
   }
+
   setOnFloor() {
     const bBox = new THREE.Box3();
     bBox.setFromObject(this.solid);
@@ -115,17 +117,19 @@ class CarHigh extends THREE.Group {
   }
 }
 
-
+// LOW LOD
+// Uso de cubo para el modelo de bajo nivel de detalle
 class CarLow extends THREE.Group {
     constructor(x, z, color) {
         super();
-        this.color = color;  // white
+        this.color = color;  
+        
         const geometry = new THREE.BoxGeometry(2, 2, 4);
         this.materialColor = new THREE.MeshBasicMaterial({color: this.color});
         this.materialWire = new THREE.LineBasicMaterial({color: 0xffffff});
         this.mesh = new THREE.Mesh(geometry, this.materialColor);
         this.lines = new THREE.Line(geometry, this.materialWire);
-        // CHILDREN
+
         this.add(this.mesh);
         this.add(this.lines);
         this.position.set(x, 0, z);
@@ -135,6 +139,7 @@ class CarLow extends THREE.Group {
     setMatWireframe(value) {
         this.lines.visible = value;
     }
+
     setMatColor(value) {
         this.mesh.visible = value;
     }
@@ -154,6 +159,9 @@ class CarLow extends THREE.Group {
     
 } 
 
+// MODELO DE AUTO CON LOD
+// Para HIGH se usa CarHigh (archivo obj)
+// Para LOW se usa CarLow (cubo)
 export default class Car extends THREE.LOD {
   constructor(x = 0, z = 0, color = 0x9ddac6) {
     super();
