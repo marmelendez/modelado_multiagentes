@@ -6,6 +6,16 @@ El programa muestra una simulación del tráfico en la intersección de dos aven
 
 ## Instalación y ejecución
 
+Asegurate de tener python3 instalado en el entorno donde planeas correr la simulación.
+
+Para correr la simulación necesitaras instalar ciertos paquetes de python:
+
+        pip install -r requirements.txt
+
+Una vez instalados los paquetes puedes correr el programa con:
+
+        python avenida.py
+
 ## Resultados
 
 #### Autores
