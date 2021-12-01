@@ -294,10 +294,10 @@ class AvenueModel(ap.Model):
                 self.cars[k], [self.p.size*0.5 - 50, 75*(k+1)])
         for k in range(c_north1, c_north1 + c_north2, 1):
             self.avenue.move_to(
-                self.cars[k], [self.p.size*0.5 - 120, 75*(k+3)])
+                self.cars[k], [self.p.size*0.5 - 120, 75*(k+1)])
         for k in range(c_north1 + c_north2, c_north, 1):
             self.avenue.move_to(
-                self.cars[k], [self.p.size*0.5 - 190, 75*(k+3)])
+                self.cars[k], [self.p.size*0.5 - 190, 75*(k+1)])
 
         # for k in range(int(c_north/3)):
         #     self.avenue.move_to(
@@ -332,10 +332,10 @@ class AvenueModel(ap.Model):
                 self.cars[k+c_north+c_south], [75*(k+1), self.p.size*0.5 + 50])
         for k in range(c_east1, c_east1 + c_east2, 1):
             self.avenue.move_to(
-                self.cars[k+c_north+c_south], [75*(k+3), self.p.size*0.5 + 120])
+                self.cars[k+c_north+c_south], [75*(k+1), self.p.size*0.5 + 120])
         for k in range(c_east1 + c_east2, c_east, 1):
             self.avenue.move_to(
-                self.cars[k+c_north+c_south], [75*(k+3), self.p.size*0.5 + 190])
+                self.cars[k+c_north+c_south], [75*(k+1), self.p.size*0.5 + 190])
 
         # Carril vertical izquierdo
         c_west1 = random.randint(int(c_west/5), int(c_west/2))
@@ -346,10 +346,10 @@ class AvenueModel(ap.Model):
                 self.cars[k + int(self.p.cars) - c_west], [self.p.size - 85*(k+1), self.p.size*0.5 - 50])
         for k in range(c_west1, c_west1 + c_west2, 1):
             self.avenue.move_to(
-                self.cars[k + int(self.p.cars) - c_west], [self.p.size - 100*(k+1), self.p.size*0.5 - 120])
+                self.cars[k + int(self.p.cars) - c_west], [self.p.size - 85*(k-c_west1+1), self.p.size*0.5 - 120])
         for k in range(c_west1 + c_west2, c_west, 1):
             self.avenue.move_to(
-                self.cars[k + int(self.p.cars) - c_west], [self.p.size - 100*(k+1), self.p.size*0.5 - 190])
+                self.cars[k + int(self.p.cars) - c_west], [self.p.size - 85*(k - c_west1 - c_west2 + 1), self.p.size*0.5 - 190])
 
         # Frame counter
         self.frames = 0
@@ -436,11 +436,11 @@ class AvenueModel(ap.Model):
 # 1 segundo = 4 steps
 parameters = {
     'step_time': 0.1,    # Tiempo de step
-    'size': 7000,        # Tamano en metros de la avenida
+    'size': 9000,        # Tamano en metros de la avenida
     'green': 30,          # Duracion de la luz verde
     'yellow': 3,         # Duracion de la luz amarilla
     'red': 24,           # Duracion de la luz roja
-    'cars': 80,          # Numero de autos en la simulacion
+    'cars': 120,          # Numero de autos en la simulacion
     'steps': 2500,       # Numero de pasos de la simulacion
 }
 

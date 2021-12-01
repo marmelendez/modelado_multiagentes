@@ -34,7 +34,7 @@ class Skybox extends THREE.Mesh {
         side: THREE.DoubleSide,
       }), // left
     ];
-    this.position.set(0, this.size / 2 - 10, 0);
+    this.position.set(0, this.size / 4 - 10, 0);
   }
   setOnFloor() {
     this.geometry.computeBoundingBox();
@@ -243,7 +243,7 @@ class Cube extends THREE.Mesh {
     depth = 50,
     height = 10,
     color = 0xcc0000,
-    wireColor = 0xffffff
+    wireColor = 0xffffff,
   ) {
     super();
     this.front = front;
@@ -276,9 +276,45 @@ class Cube extends THREE.Mesh {
   }
 }
 
+class Floor extends THREE.Mesh {
+  constructor(
+    x = 0,
+    y = 0,
+    z = 0,
+    size = 100,
+    color = 0xcc0000,
+    wireColor = 0xffffff,
+  ) {
+    super();
+    this.x = x;
+    this.y = y;
+    this.z = z;
+    this.position.set(x, y, z);
+    this.color = color;
+    this.wireColor = wireColor;
+    this.geometry = new THREE.BoxGeometry(size, 0.1, size);
+
+    this.materialWire = new THREE.MeshBasicMaterial({
+      wireframe: true,
+      color: this.wireColor,
+    });
+    this.materialColor = new THREE.MeshBasicMaterial({ color: this.color });
+    this.material = this.materialColor;
+  }
+  setWireframe() {
+    this.material = this.materialWire;
+  }
+  setColor() {
+    this.material = this.materialColor;
+  }
+}
+
 class CubeGroup extends THREE.Group {
   constructor() {
     super();
+    // FLOOR
+    this.add(new Floor(0, -0.2, 0, 1050, 0x808080, 0x808080)) // Floor
+
     //SW - TEC - SORIANA
     this.add(new Cube(-70, 50, 20, 30, 10, 0x5ca1b1)); // Gasolinera-seven
     this.add(new Cube(-55, 50, 50, 40, 0.4, 0x808080));
@@ -542,6 +578,9 @@ class BuildingFloor extends THREE.Mesh {
 class BuildingGroup extends THREE.Group {
   constructor() {
     super();
+    // FLOOR
+    this.add(new Floor(0, -0.2, 0, 1050, 0x808080, 0x808080)) // Floor
+
     //SW - TEC - SORIANA
     this.add(
       new Building(
@@ -823,7 +862,7 @@ export default class Scenary extends THREE.LOD {
     super();
 
     this.low = new THREE.Group();
-    this.low.add(new Skybox(1000));
+    this.low.add(new Skybox(2000));
     this.low.add(new Intersection());
     this.low.add(new SidewalkGroup());
     this.trafficLightsLow = new TrafficLightGroup()
@@ -831,7 +870,7 @@ export default class Scenary extends THREE.LOD {
     this.low.add(new CubeGroup());
 
     this.high = new THREE.Group();
-    this.high.add(new Skybox(1000));
+    this.high.add(new Skybox(2000));
     this.high.add(new Intersection());
     this.high.add(new SidewalkGroup());
     this.trafficLightsHigh = new TrafficLightGroup()
