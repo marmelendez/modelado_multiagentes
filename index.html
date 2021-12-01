@@ -26,35 +26,19 @@
       import Stats from "https://unpkg.com/three/examples/jsm/libs/stats.module.js";
       import { OrbitControls } from "https://unpkg.com/three@0.119.0/examples/jsm/controls/OrbitControls.js";
       import { OBJLoader } from "https://cdn.jsdelivr.net/npm/three@0.117.1/examples/jsm/loaders/OBJLoader.js";
-      import Axes from "./axes.js";
-      import Floor from "./floor.js";
-      import Scenary from "./scenery.js";
-      import Car from "./car.js";
-      import AmbientLight from "./ambientLight.js";
-      import DirectionalLight from "./directionalLight.js";
+      import Scenary from "./Scenary.js";
+      import Car from "./ModelCar.js";
+      import AmbientLight from "./LightAmbient.js";
+      import DirectionalLight from "./LightDirectional.js";
 
-      let guiModelAMenu,
-        renderer,
-        scene,
-        camera,
-        orbitControls,
-        model,
-        stats,
-        gui,
-        scenary,
-        ambientLight,
-        directionalLight,
-        data,
-        simulationSize,
-        cars = [],
-        simulation,
-        dataReady = false,
-        frame = 0;
+      let model, guiModelAMenu, renderer, scene, camera1, camera2, camera3, camera4, orbitControls, stats, gui, scenary, ambientLight, directionalLight;
+      let data, simulationSize, cars = [], simulation, dataReady = false, frmae = 0;
       window.visible = true;
       window.wireframe = true;
       window.color = true;
       window.colorCar = 0x9ddac6;
       window.colorWire = 0xf7f7f7;
+      window.multiview = false;
 
       function init(event) {
         // RENDERER ENGINE
@@ -63,6 +47,7 @@
         renderer.setViewport(0, 0, window.innerWidth, window.innerHeight);
         renderer.setClearColor(new THREE.Color(0, 0, 0));
         renderer.setPixelRatio(window.devicePixelRatio);
+        renderer.setScissorTest(true);
         document.body.appendChild(renderer.domElement);
 
         // SCENE
@@ -70,33 +55,38 @@
 
         // MODELS
         scenary = new Scenary();
-
-        // SCENE GRAPH
-        scene.add(scenary);
-        //scene.add(model);
-
-        // CAMERA (PERSPECTIVE)
-        camera = new Camera();
-        //camera.setPerspectiveView();
-        camera.setNearView();
-
-        // SETUP STATS
-        stats = new Stats();
-        stats.showPanel(0); // 0: fps, 1: ms, 2: mb, 3+: custom
-        document.body.appendChild(stats.dom);
+        model = new Car();
 
         // LIGHTS
         ambientLight = new AmbientLight();
         directionalLight = new DirectionalLight();
+
+        // SCENE GRAPH
+        scene.add(scenary);
+        scene.add(model);
         scene.add(ambientLight);
         scene.add(directionalLight);
+
+        // CAMERA (PERSPECTIVE)
+        camera1 = new Camera();
+        camera1.setPerspectiveView();
+        camera2 = new Camera();
+        camera2.setTopView();
+        camera3 = new Camera();
+        camera3.setCrossView();
+        camera4 = new Camera();
+        camera4.setNearView();
+
+        // SETUP STATS
+        stats = new Stats();
+        stats.showPanel(0); 
+        document.body.appendChild(stats.dom);
 
         // GUI
         gui = new dat.GUI();
         
-        // SIMULATION PARAMETERS
+        // GUI MENU SIMULATION PARAMETERS
         simulation = new Simulation();
-
         const guiSimulationMenu = gui.addFolder("Simulation Menu");
         
         guiSimulationMenu.add(simulation, "step_time").name("Step size").onChange(function (value) {  
@@ -130,96 +120,56 @@
         // Generates a JSON file with the parameters chosen by the user
         guiSimulationMenu.add(simulation, "to_json").name("GENERATE SIMULATION"); 
 
-        // guiSimulationMenu.open();
         // SCENE-MENU
         const guiSceneMenu = gui.addFolder("SceneMenu");
+       
         var text = { Material: "Texturas" };
         guiSceneMenu.add(text, "Material", ["Texturas", "Color", "Wireframe"]).onChange(updateMaterial);
 
         guiSceneMenu.open();
 
-        // MODEL-MENU
-        const guiModelMenu = gui.addFolder("ModelMenu");
-
-        // GUI MENU
-
-        // MENU CAMARA
+        // CAMERA MENU
         const guiCameraMenu = gui.addFolder("CameraMenu");
-        // Opcion de vistas
+
         var opView = { Vistas: "Perspectiva cruce" };
         guiCameraMenu.add(opView, "Vistas", ["Perspectiva","Perspectiva cruce","Superior","Cruce","Interior Auto",]).onChange(updateView);
-        // Rotacion de la camara
-        guiCameraMenu.add(camera.orbitControls, "autoRotate").setValue(camera.orbitControls.autoRotate).name("Auto rotate").onChange(function (value) {  
+
+        guiCameraMenu.add(window, "multiview").setValue(window.multiview).name("Multiview").listen().onChange(function(value) {});
+
+        guiCameraMenu.add(camera1.orbitControls, "autoRotate").setValue(camera1.orbitControls.autoRotate).name("Auto rotate").onChange(function (value) {  
             camera.setAutoRotate(value);
         });
-        // Inicializar vista a perspectiva
-        guiCameraMenu.add(camera, "reset").name("Reset");
+
+        guiCameraMenu.add(camera1, "reset").name("Reset");
 
         guiCameraMenu.open();
 
         // AMBIENTLIGHT-MENU
         const guiLightsMenu = gui.addFolder("LightsMenu");
-        const guiAmbientLightMenu =
-          guiLightsMenu.addFolder("AmbientLight Menu");
-        guiAmbientLightMenu
-          .add(ambientLight, "visible")
-          .name("On")
-          .setValue(ambientLight.visible)
-          .listen()
-          .onChange(function (value) {});
-        guiAmbientLightMenu
-          .addColor(ambientLight, "strColor")
-          .name("Color")
-          .setValue(ambientLight.strColor)
-          .listen()
-          .onChange(function (value) {
-            ambientLight.setColor(value);
-          });
-        guiAmbientLightMenu
-          .add(ambientLight, "intensity")
-          .name("Intensity")
-          .min(0)
-          .max(1)
-          .step(0.1)
-          .setValue(ambientLight.intensity)
-          .listen()
-          .onChange(function (value) {});
+        const guiAmbientLightMenu =guiLightsMenu.addFolder("AmbientLight Menu");
+        
+        guiAmbientLightMenu.add(ambientLight, "visible").name("On").setValue(ambientLight.visible).listen().onChange(function (value) {});
+        
+        guiAmbientLightMenu.addColor(ambientLight, "strColor").name("Color").setValue(ambientLight.strColor).listen().onChange(function (value) {
+          ambientLight.setColor(value);
+        });
+        
+        guiAmbientLightMenu.add(ambientLight, "intensity").name("Intensity").min(0).max(1).step(0.1).setValue(ambientLight.intensity).listen().onChange(function (value) {});
+        
         // DIRECTIONAL-LIGHT-MENU
         const guiDirectionalLightMenu = guiLightsMenu.addFolder(
           "DirectionalLight Menu"
         );
-        guiDirectionalLightMenu
-          .add(directionalLight, "visible")
-          .name("On")
-          .setValue(directionalLight.visible)
-          .listen()
-          .onChange(function (value) {});
-        guiDirectionalLightMenu
-          .add(directionalLight.position, "x")
-          .name("x")
-          .min(-10)
-          .max(10)
-          .step(0.1)
-          .setValue(0)
-          .listen()
-          .onChange(function (value) {});
-        guiDirectionalLightMenu
-          .addColor(directionalLight, "strColor")
-          .name("Color")
-          .setValue(directionalLight.strColor)
-          .listen()
-          .onChange(function (value) {
-            directionalLight.setColor(value);
-          });
-        guiDirectionalLightMenu
-          .add(directionalLight, "intensity")
-          .name("Intensity")
-          .min(0)
-          .max(1)
-          .step(0.1)
-          .setValue(directionalLight.intensity)
-          .listen()
-          .onChange(function (value) {});
+        
+        guiDirectionalLightMenu.add(directionalLight, "visible").name("On").setValue(directionalLight.visible).listen().onChange(function (value) {});
+        
+        guiDirectionalLightMenu.add(directionalLight.position, "x").name("x").min(-10).max(10).step(0.1).setValue(0).listen().onChange(function (value) {});
+        
+        guiDirectionalLightMenu.addColor(directionalLight, "strColor").name("Color").setValue(directionalLight.strColor).listen().onChange(function (value) {
+          directionalLight.setColor(value);
+        });
+        
+        guiDirectionalLightMenu.add(directionalLight, "intensity").name("Intensity").min(0).max(1).step(0.1).setValue(directionalLight.intensity).listen().onChange(function (value) {});
 
         // MODELS MENUS
         guiModelAMenu = gui.addFolder("ModelsMenu");
@@ -323,7 +273,7 @@
         setTimeout( function() {
             requestAnimationFrame( renderLoop);
         }, 1000 / 30 );
-        renderer.render(scene, camera); // DRAW THE SCENE GRAPH
+        renderer.render(scene, camera1); // DRAW THE SCENE GRAPH
         updateScene();
         stats.end();
       }
@@ -359,31 +309,31 @@
         const value = gui.__folders.CameraMenu.__controllers[0].object.Vistas;
         switch (value) {
           case "Perspectiva": // Vista en Perspectiva
-            camera.setPerspectiveView();
+            camera1.setPerspectiveView();
             break;
           case "Perspectiva cruce": // Vista en Perspectiva
-            camera.setNearView();
+            camera1.setNearView();
             break;
           case "Superior": // Vista superior
-            camera.setTopView();
+            camera1.setTopView();
             break;
           case "Cruce": // Vista superior
-            camera.setCrossView();
+            camera1.setCrossView();
             break;
           case "Interior Auto": // Vista desde el interior del auto
-            camera.setInModelView(model);
+            camera1.setInModelView(model);
             break;
           default:
             break;
         }
       }
 
+      // ACTUALIZAR MATERIAL DE OBJETOS
       function updateMaterial() {
         const value = gui.__folders.SceneMenu.__controllers[0].object.Material;
         console.log(value);
         switch (value) {
           case "Texturas": // Material textura
-            //camera.setNearView();
             scenary.setTexture();
             break;
           case "Color": // Material color
@@ -397,17 +347,54 @@
         }
       }
 
+      // ACTUALIZAR ESCENA
       function updateScene() {
+        if (!window.multiview) {
+          camera1.aspect = window.innerWidth / window.innerHeight;
+          camera1.updateProjectionMatrix();
+          renderer.setViewport(0, 0, window.innerWidth, window.innerHeight);
+          renderer.setScissor(0, 0, window.innerWidth, window.innerHeight);
+          renderer.render(scene, camera1);
+        } else {
+          // CAMERA 1
+          camera1.aspect = window.innerWidth / 2. / (window.innerHeight / 2);
+          camera1.updateProjectionMatrix();
+          renderer.setViewport(window.innerWidth / 2., window.innerHeight / 2, window.innerWidth / 2., window.innerHeight / 2);
+          renderer.setScissor(window.innerWidth / 2., window.innerHeight / 2, window.innerWidth / 2., window.innerHeight / 2);
+          renderer.render(scene, camera1);
+
+          // CAMERA 2
+          camera2.aspect = window.innerWidth / 2. / (window.innerHeight / 2);
+          camera2.updateProjectionMatrix();
+          renderer.setViewport(0, window.innerHeight / 2, window.innerWidth / 2., window.innerHeight / 2);
+          renderer.setScissor(0, window.innerHeight / 2, window.innerWidth / 2., window.innerHeight / 2);
+          renderer.render(scene, camera2);
+
+          // CAMERA 3
+          camera3.aspect = window.innerWidth / 2. / (window.innerHeight / 2);
+          camera3.updateProjectionMatrix();
+          renderer.setViewport(0, 0, window.innerWidth / 2., window.innerHeight / 2);
+          renderer.setScissor(0, 0, window.innerWidth / 2., window.innerHeight / 2);
+          renderer.render(scene, camera3);
+
+          // CAMERA 4
+          camera4.aspect = window.innerWidth / 2. / (window.innerHeight / 2);
+          camera4.updateProjectionMatrix();
+          renderer.setViewport(window.innerWidth / 2, 0, window.innerWidth / 2., window.innerHeight / 2);
+          renderer.setScissor(window.innerWidth / 2, 0, window.innerWidth / 2., window.innerHeight / 2);
+          renderer.render(scene, camera4);
+        }
+
         if (model && model.animate) {
           model.position.z = model.position.z - 0.1;
         }
 
-        if (camera.orbitControls.autoRotate) {
-          camera.orbitControls.update();
+        if (camera1.orbitControls.autoRotate) {
+          camera1.orbitControls.update();
         }
 
-        if (camera.insideCar) {
-          camera.position.z = model.position.z - 0.2;
+        if (camera1.insideCar) {
+          camera1.position.z = model.position.z - 0.2;
         }
 
         if(dataReady){
@@ -454,15 +441,49 @@
       // EVENT LISTENERS & HANDLERS
       document.addEventListener("DOMContentLoaded", init);
 
-      window.addEventListener(
-        "resize",
-        () => {
-          camera.aspect = window.innerWidth / window.innerHeight;
+      window.addEventListener( "resize", () => {
+        if (!window.multiview) {
+          camera1.aspect = window.innerWidth / window.innerHeight;
+          camera1.updateProjectionMatrix();
+          renderer.setSize(window.innerWidth, window.innerHeight);
+        } else {
+          // CAMERA 1
+          camera1.aspect = window.innerWidth / 2. / (window.innerHeight / 2);
+          camera1.updateProjectionMatrix();
+          // CAMERA 2
+          camera2.aspect = window.innerWidth / 2. / (window.innerHeight / 2);
+          camera2.updateProjectionMatrix();
+          // CAMERA 3
+          camera3.aspect = window.innerWidth / 2. / (window.innerHeight / 2);
+          camera3.updateProjectionMatrix();
+          // CAMERA 4
+          camera4.aspect = window.innerWidth / 2. / (window.innerHeight / 2);
+          camera4.updateProjectionMatrix();
+          renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+      }, false);
+
+
+
+      // Uso de flecha izquierda, derecha y arriba (para ver vista frontal)
+      window.addEventListener('keydown', onKeyDown, false);
+        function onKeyDown(event) {
+          if (event.key !== undefined) {
+            if (event.keyCode == 37) { // 37 izquierda
+              camera1.rotation.y = -Math.PI / 2;
+            } else if (event.keyCode == 38) { // 38 arriba
+              camera1.rotation.y = 0;
+            } else if (event.keyCode == 39) { // 39 derecha
+              camera1.rotation.y = Math.PI / 2;
+            }
+          }
+        }
+          /*camera.aspect = window.innerWidth / window.innerHeight;
           camera.updateProjectionMatrix();
           renderer.setSize(window.innerWidth, window.innerHeight);
         },
-        false
-      );
+        false*/
+      
 
       // read text file function
       function readTextFile(file, callback) {
@@ -501,22 +522,17 @@
           a.click();
         }
       }
-      // LIGHTS
 
       // CAMARA
       class Camera extends THREE.PerspectiveCamera {
-        constructor(
-          fov = 60,
-          aspect = window.innerWidth / window.innerHeight,
-          near = 0.1,
-          far = 10000
-        ) {
+        constructor(fov = 60, aspect = window.innerWidth / window.innerHeight, near = 0.1, far = 1000) {
           super(fov, aspect, near, far);
           this.insideCar = false;
           this.orbitControls = new OrbitControls(this, renderer.domElement);
           this.orbitControls.update();
           this.position.set(-80, 100, 300);
         }
+
         setPerspectiveView() {
           this.insideCar = false;
           this.position.set(-200, 250, 250);
