@@ -126,8 +126,6 @@
         var text = { Material: "Texturas" };
         guiSceneMenu.add(text, "Material", ["Texturas", "Color", "Wireframe"]).onChange(updateMaterial);
 
-        guiSceneMenu.add(window, "multiview").setValue(window.multiview).name("Multiview").listen().onChange(function(value) {});
-
         guiSceneMenu.open();
 
         // CAMERA MENU
@@ -135,6 +133,8 @@
 
         var opView = { Vistas: "Perspectiva cruce" };
         guiCameraMenu.add(opView, "Vistas", ["Perspectiva","Perspectiva cruce","Superior","Cruce","Interior Auto",]).onChange(updateView);
+
+        guiCameraMenu.add(window, "multiview").setValue(window.multiview).name("Multiview").listen().onChange(function(value) {});
 
         guiCameraMenu.add(camera1.orbitControls, "autoRotate").setValue(camera1.orbitControls.autoRotate).name("Auto rotate").onChange(function (value) {  
             camera.setAutoRotate(value);
@@ -384,6 +384,22 @@
           renderer.setSize(window.innerWidth, window.innerHeight);
         }
       }, false);
+
+
+
+      // Uso de flecha izquierda, derecha y arriba (para ver vista frontal)
+      window.addEventListener('keydown', onKeyDown, false);
+        function onKeyDown(event) {
+          if (event.key !== undefined) {
+            if (event.keyCode == 37) { // 37 izquierda
+              camera1.rotation.y = -Math.PI / 2;
+            } else if (event.keyCode == 38) { // 38 arriba
+              camera1.rotation.y = 0;
+            } else if (event.keyCode == 39) { // 39 derecha
+              camera1.rotation.y = Math.PI / 2;
+            }
+          }
+        }
           /*camera.aspect = window.innerWidth / window.innerHeight;
           camera.updateProjectionMatrix();
           renderer.setSize(window.innerWidth, window.innerHeight);
