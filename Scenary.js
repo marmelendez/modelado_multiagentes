@@ -286,7 +286,7 @@ class CubeGroup extends THREE.Group {
   constructor() {
     super();
     // FLOOR
-    this.add(new Floor(0, -0.2, 0, 1050, 0x808080, 0x808080)) // Floor
+    this.add(new Floor(0, -0.2, 0, 1050, 0xBBBBBB, 0xBBBBBB)) // Floor
 
     //SW - TEC - SORIANA
     this.add(new Cube(-70, 50, 20, 30, 10, 0x5ca1b1)); // Gasolinera-seven
@@ -546,7 +546,7 @@ class BuildingGroup extends THREE.Group {
   constructor() {
     super();
     // FLOOR
-    this.add(new Floor(0, -0.2, 0, 1050, 0x808080, 0x808080)) // Floor
+    this.add(new Floor(0, -0.2, 0, 900, 0x808080, 0x808080)) // Floor
 
     //SW - TEC - SORIANA
     this.add(new Building(  -70,  50,  20,  30,  10,  "seven_front.png", "seven_back.png", "seven_side.png", 0x544C42)); // Gasolinera-seven -57.5, 37.5, 20, 40, 10, "./textures/seven_front.png"
