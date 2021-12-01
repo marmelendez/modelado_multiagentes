@@ -169,8 +169,8 @@ export default class Car extends THREE.LOD {
     this.low = new CarLow(x, z, color);
     this.high = new CarHigh(x, z, color);
 
-    this.addLevel(this.high, 100);
-    this.addLevel(this.low, 200);
+    this.addLevel(this.high, 50);
+    this.addLevel(this.low, 100);
   }
 
   setVisible(value) {

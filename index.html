@@ -31,12 +31,13 @@
       import AmbientLight from "./LightAmbient.js";
       import DirectionalLight from "./LightDirectional.js";
 
-      let model, guiModelAMenu, renderer, scene, camera, orbitControls, stats, gui, scenary, ambientLight, directionalLight, cars = [], simulation, dataReady = false;
+      let model, guiModelAMenu, renderer, scene, camera1, camera2, camera3, camera4, orbitControls, stats, gui, scenary, ambientLight, directionalLight, cars = [], simulation, dataReady = false;
       window.visible = true;
       window.wireframe = true;
       window.color = true;
       window.colorCar = 0x9ddac6;
       window.colorWire = 0xf7f7f7;
+      window.multiview = false;
 
       function init(event) {
         // RENDERER ENGINE
@@ -45,6 +46,7 @@
         renderer.setViewport(0, 0, window.innerWidth, window.innerHeight);
         renderer.setClearColor(new THREE.Color(0, 0, 0));
         renderer.setPixelRatio(window.devicePixelRatio);
+        renderer.setScissorTest(true);
         document.body.appendChild(renderer.domElement);
 
         // SCENE
@@ -65,8 +67,14 @@
         scene.add(directionalLight);
 
         // CAMERA (PERSPECTIVE)
-        camera = new Camera();
-        camera.setNearView();
+        camera1 = new Camera();
+        camera1.setPerspectiveView();
+        camera2 = new Camera();
+        camera2.setTopView();
+        camera3 = new Camera();
+        camera3.setCrossView();
+        camera4 = new Camera();
+        camera4.setNearView();
 
         // SETUP STATS
         stats = new Stats();
@@ -118,6 +126,8 @@
         var text = { Material: "Texturas" };
         guiSceneMenu.add(text, "Material", ["Texturas", "Color", "Wireframe"]).onChange(updateMaterial);
 
+        guiSceneMenu.add(window, "multiview").setValue(window.multiview).name("Multiview").listen().onChange(function(value) {});
+
         guiSceneMenu.open();
 
         // CAMERA MENU
@@ -126,11 +136,11 @@
         var opView = { Vistas: "Perspectiva cruce" };
         guiCameraMenu.add(opView, "Vistas", ["Perspectiva","Perspectiva cruce","Superior","Cruce","Interior Auto",]).onChange(updateView);
 
-        guiCameraMenu.add(camera.orbitControls, "autoRotate").setValue(camera.orbitControls.autoRotate).name("Auto rotate").onChange(function (value) {  
+        guiCameraMenu.add(camera1.orbitControls, "autoRotate").setValue(camera1.orbitControls.autoRotate).name("Auto rotate").onChange(function (value) {  
             camera.setAutoRotate(value);
         });
 
-        guiCameraMenu.add(camera, "reset").name("Reset");
+        guiCameraMenu.add(camera1, "reset").name("Reset");
 
         guiCameraMenu.open();
 
@@ -224,7 +234,7 @@
 
       function renderLoop() {
         stats.begin();
-        renderer.render(scene, camera); // DRAW THE SCENE GRAPH
+        renderer.render(scene, camera1); // DRAW THE SCENE GRAPH
         updateScene();
         stats.end();
         requestAnimationFrame(renderLoop);
@@ -261,19 +271,19 @@
         const value = gui.__folders.CameraMenu.__controllers[0].object.Vistas;
         switch (value) {
           case "Perspectiva": // Vista en Perspectiva
-            camera.setPerspectiveView();
+            camera1.setPerspectiveView();
             break;
           case "Perspectiva cruce": // Vista en Perspectiva
-            camera.setNearView();
+            camera1.setNearView();
             break;
           case "Superior": // Vista superior
-            camera.setTopView();
+            camera1.setTopView();
             break;
           case "Cruce": // Vista superior
-            camera.setCrossView();
+            camera1.setCrossView();
             break;
           case "Interior Auto": // Vista desde el interior del auto
-            camera.setInModelView(model);
+            camera1.setInModelView(model);
             break;
           default:
             break;
@@ -301,31 +311,85 @@
 
       // ACTUALIZAR ESCENA
       function updateScene() {
+        if (!window.multiview) {
+          camera1.aspect = window.innerWidth / window.innerHeight;
+          camera1.updateProjectionMatrix();
+          renderer.setViewport(0, 0, window.innerWidth, window.innerHeight);
+          renderer.setScissor(0, 0, window.innerWidth, window.innerHeight);
+          renderer.render(scene, camera1);
+        } else {
+          // CAMERA 1
+          camera1.aspect = window.innerWidth / 2. / (window.innerHeight / 2);
+          camera1.updateProjectionMatrix();
+          renderer.setViewport(window.innerWidth / 2., window.innerHeight / 2, window.innerWidth / 2., window.innerHeight / 2);
+          renderer.setScissor(window.innerWidth / 2., window.innerHeight / 2, window.innerWidth / 2., window.innerHeight / 2);
+          renderer.render(scene, camera1);
+
+          // CAMERA 2
+          camera2.aspect = window.innerWidth / 2. / (window.innerHeight / 2);
+          camera2.updateProjectionMatrix();
+          renderer.setViewport(0, window.innerHeight / 2, window.innerWidth / 2., window.innerHeight / 2);
+          renderer.setScissor(0, window.innerHeight / 2, window.innerWidth / 2., window.innerHeight / 2);
+          renderer.render(scene, camera2);
+
+          // CAMERA 3
+          camera3.aspect = window.innerWidth / 2. / (window.innerHeight / 2);
+          camera3.updateProjectionMatrix();
+          renderer.setViewport(0, 0, window.innerWidth / 2., window.innerHeight / 2);
+          renderer.setScissor(0, 0, window.innerWidth / 2., window.innerHeight / 2);
+          renderer.render(scene, camera3);
+
+          // CAMERA 4
+          camera4.aspect = window.innerWidth / 2. / (window.innerHeight / 2);
+          camera4.updateProjectionMatrix();
+          renderer.setViewport(window.innerWidth / 2, 0, window.innerWidth / 2., window.innerHeight / 2);
+          renderer.setScissor(window.innerWidth / 2, 0, window.innerWidth / 2., window.innerHeight / 2);
+          renderer.render(scene, camera4);
+        }
+
         if (model && model.animate) {
           model.position.z = model.position.z - 0.1;
         }
 
-        if (camera.orbitControls.autoRotate) {
-          camera.orbitControls.update();
+        if (camera1.orbitControls.autoRotate) {
+          camera1.orbitControls.update();
         }
 
-        if (camera.insideCar) {
-          camera.position.z = model.position.z - 0.2;
+        if (camera1.insideCar) {
+          camera1.position.z = model.position.z - 0.2;
         }
       }
 
       // EVENT LISTENERS & HANDLERS
       document.addEventListener("DOMContentLoaded", init);
 
-      window.addEventListener(
-        "resize",
-        () => {
-          camera.aspect = window.innerWidth / window.innerHeight;
+      window.addEventListener( "resize", () => {
+        if (!window.multiview) {
+          camera1.aspect = window.innerWidth / window.innerHeight;
+          camera1.updateProjectionMatrix();
+          renderer.setSize(window.innerWidth, window.innerHeight);
+        } else {
+          // CAMERA 1
+          camera1.aspect = window.innerWidth / 2. / (window.innerHeight / 2);
+          camera1.updateProjectionMatrix();
+          // CAMERA 2
+          camera2.aspect = window.innerWidth / 2. / (window.innerHeight / 2);
+          camera2.updateProjectionMatrix();
+          // CAMERA 3
+          camera3.aspect = window.innerWidth / 2. / (window.innerHeight / 2);
+          camera3.updateProjectionMatrix();
+          // CAMERA 4
+          camera4.aspect = window.innerWidth / 2. / (window.innerHeight / 2);
+          camera4.updateProjectionMatrix();
+          renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+      }, false);
+          /*camera.aspect = window.innerWidth / window.innerHeight;
           camera.updateProjectionMatrix();
           renderer.setSize(window.innerWidth, window.innerHeight);
         },
-        false
-      );
+        false*/
+      
 
       class Simulation {
         constructor(step_time = 0.1, size = 1000, green = 5, yellow = 0, red = 5, cars = 10, steps = 1000){
