@@ -157,67 +157,26 @@
 
         // AMBIENTLIGHT-MENU
         const guiLightsMenu = gui.addFolder("LightsMenu");
-        const guiAmbientLightMenu =
-          guiLightsMenu.addFolder("AmbientLight Menu");
-        guiAmbientLightMenu
-          .add(ambientLight, "visible")
-          .name("On")
-          .setValue(ambientLight.visible)
-          .listen()
-          .onChange(function (value) {});
-        guiAmbientLightMenu
-          .addColor(ambientLight, "strColor")
-          .name("Color")
-          .setValue(ambientLight.strColor)
-          .listen()
-          .onChange(function (value) {
-            ambientLight.setColor(value);
-          });
-        guiAmbientLightMenu
-          .add(ambientLight, "intensity")
-          .name("Intensity")
-          .min(0)
-          .max(1)
-          .step(0.1)
-          .setValue(ambientLight.intensity)
-          .listen()
-          .onChange(function (value) {});
+        const guiAmbientLightMenu =guiLightsMenu.addFolder("AmbientLight Menu");
+        guiAmbientLightMenu.add(ambientLight, "visible").name("On").setValue(ambientLight.visible).listen().onChange(function (value) {});
+        guiAmbientLightMenu.addColor(ambientLight, "strColor").name("Color").setValue(ambientLight.strColor).listen().onChange(function (value) {
+          ambientLight.setColor(value);
+        });
+        guiAmbientLightMenu.add(ambientLight, "intensity").name("Intensity").min(0).max(1).step(0.1).setValue(ambientLight.intensity).listen().onChange(function (value) {});
         // DIRECTIONAL-LIGHT-MENU
         const guiDirectionalLightMenu = guiLightsMenu.addFolder(
           "DirectionalLight Menu"
         );
-        guiDirectionalLightMenu
-          .add(directionalLight, "visible")
-          .name("On")
-          .setValue(directionalLight.visible)
-          .listen()
-          .onChange(function (value) {});
-        guiDirectionalLightMenu
-          .add(directionalLight.position, "x")
-          .name("x")
-          .min(-10)
-          .max(10)
-          .step(0.1)
-          .setValue(0)
-          .listen()
-          .onChange(function (value) {});
-        guiDirectionalLightMenu
-          .addColor(directionalLight, "strColor")
-          .name("Color")
-          .setValue(directionalLight.strColor)
-          .listen()
-          .onChange(function (value) {
-            directionalLight.setColor(value);
-          });
-        guiDirectionalLightMenu
-          .add(directionalLight, "intensity")
-          .name("Intensity")
-          .min(0)
-          .max(1)
-          .step(0.1)
-          .setValue(directionalLight.intensity)
-          .listen()
-          .onChange(function (value) {});
+        guiDirectionalLightMenu.add(directionalLight, "visible").name("On").setValue(directionalLight.visible).listen().onChange(function (value) {});
+        
+        guiDirectionalLightMenu.add(directionalLight.position, "x").name("x").min(-10).max(10).step(0.1).setValue(0).listen().onChange(function (value) {});
+        
+        guiDirectionalLightMenu.addColor(directionalLight, "strColor").name("Color").setValue(directionalLight.strColor).listen().onChange(function (value) {
+          directionalLight.setColor(value);
+        });
+        
+        guiDirectionalLightMenu.add(directionalLight, "intensity").name("Intensity").min(0).max(1).step(0.1).setValue(directionalLight.intensity).listen().onChange(function (value) {});
+
 
         // MODELS MENUS
         guiModelAMenu = gui.addFolder("ModelsMenu");

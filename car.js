@@ -28,9 +28,7 @@ class CarHigh extends THREE.Group {
         // SOLID
         object.traverse(function (child) {
           if (child.isMesh) {
-            child.material = new THREE.MeshBasicMaterial({
-              color: model.color,
-            });
+            child.material = new THREE.MeshPhongMaterial({ color: model.color});
           }
         });
         model.solid = object;
@@ -39,10 +37,7 @@ class CarHigh extends THREE.Group {
         model.wire = object.clone();
         model.wire.traverse(function (child) {
           if (child.isMesh) {
-            child.material = new THREE.MeshBasicMaterial({
-              wireframe: true,
-              color: model.wireColor,
-            });
+            child.material = new THREE.MeshBasicMaterial({ wireframe: true, color: model.wireColor });
           }
         });
 

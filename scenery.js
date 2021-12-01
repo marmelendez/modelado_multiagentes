@@ -44,15 +44,7 @@ class Skybox extends THREE.Mesh {
 }
 
 class Street extends THREE.Group {
-  constructor(
-    width = 100,
-    height = 100,
-    filename = "./textures/street.png",
-    x = 0,
-    z = 0,
-    rX = 1,
-    rY = 1
-  ) {
+  constructor(width = 100,height = 100,filename = "./textures/street.png",x = 0,z = 0,rX = 1,rY = 1) {
     super();
     this.visible = true;
     this.width = width;
@@ -62,11 +54,7 @@ class Street extends THREE.Group {
     this.z = z;
     const geometry = new THREE.PlaneGeometry(this.width, this.height);
     this.texture = new THREE.TextureLoader().load(this.filename);
-    this.material = new THREE.MeshBasicMaterial({
-      map: this.texture,
-      wireframe: false,
-      color: 0xffffff,
-    });
+    this.material = new THREE.MeshPhongMaterial({ map: this.texture, wireframe: false, color: 0xffffff});
     this.mesh = new THREE.Mesh(geometry, this.material);
     this.mesh.rotation.x = -Math.PI / 2;
     this.texture.wrapS = THREE.RepeatWrapping;
@@ -234,15 +222,7 @@ class SidewalkGroup extends THREE.Group {
 }
 
 class Cube extends THREE.Mesh {
-  constructor(
-    x = 0,
-    z = 0,
-    front = 50,
-    depth = 50,
-    height = 10,
-    color = 0xcc0000,
-    wireColor = 0xffffff
-  ) {
+  constructor( x = 0, z = 0, front = 50, depth = 50, height = 10, color = 0xcc0000, wireColor = 0xffffff) {
     super();
     this.front = front;
     this.length = length;
@@ -252,11 +232,8 @@ class Cube extends THREE.Mesh {
     this.wireColor = wireColor;
     this.geometry = new THREE.BoxGeometry(front, height, depth);
 
-    this.materialWire = new THREE.MeshBasicMaterial({
-      wireframe: true,
-      color: this.wireColor,
-    });
-    this.materialColor = new THREE.MeshBasicMaterial({ color: this.color });
+    this.materialWire = new THREE.MeshBasicMaterial({ wireframe: true, color: this.wireColor,});
+    this.materialColor = new THREE.MeshPhongMaterial({ color: this.color });
     this.material = this.materialColor;
 
     this.setOnFloor();
@@ -473,15 +450,7 @@ class Building extends THREE.Mesh {
 }
 
 class BuildingFloor extends THREE.Mesh {
-  constructor(
-    x = 0,
-    z = 0,
-    width = 50,
-    depth = 10,
-    height = 10,
-    file = "./textures/seven_parking.png",
-    color = 0xffe5b9
-  ) {
+  constructor( x = 0, z = 0, width = 50, depth = 10, height = 10, file = "./textures/seven_parking.png", color = 0xffe5b9) {
     super();
     this.geometry = new THREE.BoxGeometry(width, height, depth);
     this.file = file;
@@ -491,12 +460,12 @@ class BuildingFloor extends THREE.Mesh {
     this.position.set(x, 0, z);
 
     this.material = [
-      new THREE.MeshBasicMaterial({ color: this.color, side: THREE.FrontSide }),
-      new THREE.MeshBasicMaterial({ color: this.color, side: THREE.FrontSide }),
-      new THREE.MeshBasicMaterial({ map: texture, side: THREE.FrontSide }),
-      new THREE.MeshBasicMaterial({ color: this.color, side: THREE.FrontSide }),
-      new THREE.MeshBasicMaterial({ color: this.color, side: THREE.FrontSide }),
-      new THREE.MeshBasicMaterial({ color: this.color, side: THREE.FrontSide }),
+      new THREE.MeshPhongMaterial({ color: this.color, side: THREE.FrontSide }),
+      new THREE.MeshPhongMaterial({ color: this.color, side: THREE.FrontSide }),
+      new THREE.MeshPhongMaterial({ map: texture, side: THREE.FrontSide }),
+      new THREE.MeshPhongMaterial({ color: this.color, side: THREE.FrontSide }),
+      new THREE.MeshPhongMaterial({ color: this.color, side: THREE.FrontSide }),
+      new THREE.MeshPhongMaterial({ color: this.color, side: THREE.FrontSide }),
     ];
 
     this.materialTexture = this.material;
@@ -504,7 +473,7 @@ class BuildingFloor extends THREE.Mesh {
       wireframe: true,
       color: 0xffffff,
     });
-    this.materialColor = new THREE.MeshBasicMaterial({ color: this.color });
+    this.materialColor = new THREE.MeshPhongMaterial({ color: this.color });
 
     this.position.set(x, 0, z);
     this.setOnFloor();
