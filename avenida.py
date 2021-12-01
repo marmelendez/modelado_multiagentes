@@ -174,8 +174,8 @@ class Car(ap.Agent):
             crashed_car.state = 0
 
         # Se encontro un carro adelante cercano -> frenar mucho
-        elif min_car_distance < 70:
-            self.speed = np.maximum(self.speed - 250*self.step_time, 0)
+        elif min_car_distance < 150:
+            self.speed = np.maximum(self.speed - 150*self.step_time, 0)
 
         # Se encontro un carro adelante lejano -> frenar poco
         elif min_car_distance < 150:
@@ -189,8 +189,8 @@ class Car(ap.Agent):
         # Semaforo en rojo o amarillo, no se encontro carro enfrente, el carro tiene poca velocidad
         elif self.speed <= 20 and min_car_distance > 50 and (semaphore_state == 2 or semaphore_state == 1):
             # Si esta lejos del semaforo -> acelerar poco
-            if(min_semaphore_distance > 660 and self.speed != 20):
-                self.speed = np.minimum(self.speed + 5*self.step_time, 30)
+            if(min_semaphore_distance > 700):
+                self.speed = np.minimum(self.speed + 5*self.step_time, 20)
             # Si esta cerca del semaforo -> frenar mucho
             else:
                 self.speed = np.maximum(self.speed - 200*self.step_time, 0)
@@ -206,7 +206,7 @@ class Car(ap.Agent):
 
         # Semaforo en rojo y lejano -> frenar medio
         elif min_semaphore_distance < 800 and semaphore_state == 2:
-            self.speed = np.maximum(self.speed - 80*self.step_time, 0)
+            self.speed = np.maximum(self.speed - 90*self.step_time, 0)
 
         # Otro caso -> acelerar poco
         else:
@@ -224,14 +224,11 @@ class AvenueModel(ap.Model):
         self.cars = ap.AgentList(self, self.p.cars, Car)
         self.cars.step_time = self.p.step_time
 
-        # c_north = int(self.p.cars / 2)
-        # c_south = int(self.p.cars - c_north)
-
-        car_number = int(self.p.cars/4)
-        c_north = int(car_number)
-        c_south = int(car_number)
-        c_east = int(car_number)
-        c_west = int(self.p.cars - (3 * car_number))
+        # Numero de carros por calle
+        c_north = random.randint(int(self.p.cars/8), int(self.p.cars/3))
+        c_south = random.randint(int(self.p.cars/8), int(self.p.cars/3))
+        c_east = random.randint(int(self.p.cars/8), int(self.p.cars/3))
+        c_west = int(self.p.cars - c_north - c_south - c_east)
 
         # Direcciones de carros
         for k in range(c_north):
@@ -289,46 +286,68 @@ class AvenueModel(ap.Model):
         # Acomodar carros en carriles
 
         # Carril horizontal derecho
-        for k in range(int(c_north/3)):
+        c_north1 = random.randint(int(c_north/5), int(c_north/2))
+        c_north2 = random.randint(int(c_north/4), int(c_north/2))
+
+        for k in range(c_north1):
             self.avenue.move_to(
                 self.cars[k], [self.p.size*0.5 - 50, 75*(k+1)])
-        for k in range(int(c_north/3), int(c_north/3) * 2, 1):
+        for k in range(c_north1, c_north1 + c_north2, 1):
             self.avenue.move_to(
-                self.cars[k], [self.p.size*0.5 - 120, 75*(k+3 - (c_north/2))])
-        for k in range(int(c_north/3) * 2, c_north, 1):
+                self.cars[k], [self.p.size*0.5 - 120, 75*(k+3)])
+        for k in range(c_north1 + c_north2, c_north, 1):
             self.avenue.move_to(
-                self.cars[k], [self.p.size*0.5 - 190, 75*(k+3 - (c_north/2))])
+                self.cars[k], [self.p.size*0.5 - 190, 75*(k+3)])
+
+        # for k in range(int(c_north/3)):
+        #     self.avenue.move_to(
+        #         self.cars[k], [self.p.size*0.5 - 50, 75*(k+1)])
+        # for k in range(int(c_north/3), int(c_north/3) * 2, 1):
+        #     self.avenue.move_to(
+        #         self.cars[k], [self.p.size*0.5 - 120, 75*(k+3)])
+        # for k in range(int(c_north/3) * 2, c_north, 1):
+        #     self.avenue.move_to(
+        #         self.cars[k], [self.p.size*0.5 - 190, 75*(k+3)])
 
         # Carril horizontal izquierdo
-        for k in range(int(c_south/3)):
+        c_south1 = random.randint(int(c_south/5), int(c_south/2))
+        c_south2 = random.randint(int(c_south/4), int(c_south/2))
+
+        for k in range(int(c_south1)):
             self.avenue.move_to(
                 self.cars[k+c_north], [self.p.size*0.5 + 50, self.p.size - (k+1)*75])
-        for k in range(int(c_south/3), int(c_south/3) * 2, 1):
+        for k in range(c_south1, c_south1 + c_south2, 1):
             self.avenue.move_to(
                 self.cars[k+c_north], [self.p.size*0.5 + 120, self.p.size - (k+2)*80])
-        for k in range(int(c_south/3) * 2, c_south, 1):
+        for k in range(c_south1 + c_south2, c_south, 1):
             self.avenue.move_to(
                 self.cars[k+c_north], [self.p.size*0.5 + 190, self.p.size - (k+2)*80])
 
         # Carril vertical derecho
-        for k in range(int(c_east/3)):
+        c_east1 = random.randint(int(c_east/5), int(c_east/2))
+        c_east2 = random.randint(int(c_east/4), int(c_east/2))
+
+        for k in range(c_east1):
             self.avenue.move_to(
-                self.cars[k+c_south+c_north], [75*(k+1), self.p.size*0.5 + 50])
-        for k in range(int(c_east/3), int(c_east/3) * 2, 1):
+                self.cars[k+c_north+c_south], [75*(k+1), self.p.size*0.5 + 50])
+        for k in range(c_east1, c_east1 + c_east2, 1):
             self.avenue.move_to(
-                self.cars[k+c_south+c_north], [75*(k+3), self.p.size*0.5 + 120])
-        for k in range(int(c_east/3) * 2, c_east, 1):
+                self.cars[k+c_north+c_south], [75*(k+3), self.p.size*0.5 + 120])
+        for k in range(c_east1 + c_east2, c_east, 1):
             self.avenue.move_to(
-                self.cars[k+c_south+c_north], [75*(k+3), self.p.size*0.5 + 190])
+                self.cars[k+c_north+c_south], [75*(k+3), self.p.size*0.5 + 190])
 
         # Carril vertical izquierdo
-        for k in range(int(c_west/3)):
+        c_west1 = random.randint(int(c_west/5), int(c_west/2))
+        c_west2 = random.randint(int(c_west/4), int(c_west/2))
+
+        for k in range(c_west1):
             self.avenue.move_to(
                 self.cars[k + int(self.p.cars) - c_west], [self.p.size - 85*(k+1), self.p.size*0.5 - 50])
-        for k in range(int(c_west/3), int(c_west/3) * 2, 1):
+        for k in range(c_west1, c_west1 + c_west2, 1):
             self.avenue.move_to(
                 self.cars[k + int(self.p.cars) - c_west], [self.p.size - 100*(k+1), self.p.size*0.5 - 120])
-        for k in range(int(c_west/3) * 2, c_west, 1):
+        for k in range(c_west1 + c_west2, c_west, 1):
             self.avenue.move_to(
                 self.cars[k + int(self.p.cars) - c_west], [self.p.size - 100*(k+1), self.p.size*0.5 - 190])
 
@@ -415,11 +434,11 @@ class AvenueModel(ap.Model):
 # 1 segundo = 4 steps
 parameters = {
     'step_time': 0.1,    # Tiempo de step
-    'size': 2500,        # Tamano en metros de la avenida
+    'size': 7000,        # Tamano en metros de la avenida
     'green': 30,          # Duracion de la luz verde
     'yellow': 3,         # Duracion de la luz amarilla
     'red': 24,           # Duracion de la luz roja
-    'cars': 30,          # Numero de autos en la simulacion
+    'cars': 80,          # Numero de autos en la simulacion
     'steps': 2500,       # Numero de pasos de la simulacion
 }
 
