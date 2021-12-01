@@ -31,20 +31,7 @@
       import AmbientLight from "./LightAmbient.js";
       import DirectionalLight from "./LightDirectional.js";
 
-      let guiModelAMenu,
-        renderer,
-        scene,
-        camera,
-        orbitControls,
-        model,
-        stats,
-        gui,
-        scenary,
-        ambientLight,
-        directionalLight,
-        cars = [],
-        simulation,
-        dataReady = false;
+      let model, guiModelAMenu, renderer, scene, camera, orbitControls, stats, gui, scenary, ambientLight, directionalLight, cars = [], simulation, dataReady = false;
       window.visible = true;
       window.wireframe = true;
       window.color = true;
@@ -65,34 +52,32 @@
 
         // MODELS
         scenary = new Scenary();
-        model = new Car(); //0,200
-
-        // SCENE GRAPH
-        scene.add(scenary);
-        scene.add(model);
-
-        // CAMERA (PERSPECTIVE)
-        camera = new Camera();
-        //camera.setPerspectiveView();
-        camera.setNearView();
-
-        // SETUP STATS
-        stats = new Stats();
-        stats.showPanel(0); // 0: fps, 1: ms, 2: mb, 3+: custom
-        document.body.appendChild(stats.dom);
+        model = new Car();
 
         // LIGHTS
         ambientLight = new AmbientLight();
         directionalLight = new DirectionalLight();
+
+        // SCENE GRAPH
+        scene.add(scenary);
+        scene.add(model);
         scene.add(ambientLight);
         scene.add(directionalLight);
+
+        // CAMERA (PERSPECTIVE)
+        camera = new Camera();
+        camera.setNearView();
+
+        // SETUP STATS
+        stats = new Stats();
+        stats.showPanel(0); 
+        document.body.appendChild(stats.dom);
 
         // GUI
         gui = new dat.GUI();
         
-        // SIMULATION PARAMETERS
+        // GUI MENU SIMULATION PARAMETERS
         simulation = new Simulation();
-
         const guiSimulationMenu = gui.addFolder("Simulation Menu");
         
         guiSimulationMenu.add(simulation, "step_time").name("Step size").onChange(function (value) {  
@@ -126,29 +111,25 @@
         // Generates a JSON file with the parameters chosen by the user
         guiSimulationMenu.add(simulation, "to_json").name("GENERATE SIMULATION"); 
 
-        guiSimulationMenu.open();
+
         // SCENE-MENU
         const guiSceneMenu = gui.addFolder("SceneMenu");
+       
         var text = { Material: "Texturas" };
         guiSceneMenu.add(text, "Material", ["Texturas", "Color", "Wireframe"]).onChange(updateMaterial);
 
         guiSceneMenu.open();
 
-        // MODEL-MENU
-        const guiModelMenu = gui.addFolder("ModelMenu");
-
-        // GUI MENU
-
-        // MENU CAMARA
+        // CAMERA MENU
         const guiCameraMenu = gui.addFolder("CameraMenu");
-        // Opcion de vistas
+
         var opView = { Vistas: "Perspectiva cruce" };
         guiCameraMenu.add(opView, "Vistas", ["Perspectiva","Perspectiva cruce","Superior","Cruce","Interior Auto",]).onChange(updateView);
-        // Rotacion de la camara
+
         guiCameraMenu.add(camera.orbitControls, "autoRotate").setValue(camera.orbitControls.autoRotate).name("Auto rotate").onChange(function (value) {  
             camera.setAutoRotate(value);
         });
-        // Inicializar vista a perspectiva
+
         guiCameraMenu.add(camera, "reset").name("Reset");
 
         guiCameraMenu.open();
@@ -156,15 +137,20 @@
         // AMBIENTLIGHT-MENU
         const guiLightsMenu = gui.addFolder("LightsMenu");
         const guiAmbientLightMenu =guiLightsMenu.addFolder("AmbientLight Menu");
+        
         guiAmbientLightMenu.add(ambientLight, "visible").name("On").setValue(ambientLight.visible).listen().onChange(function (value) {});
+        
         guiAmbientLightMenu.addColor(ambientLight, "strColor").name("Color").setValue(ambientLight.strColor).listen().onChange(function (value) {
           ambientLight.setColor(value);
         });
+        
         guiAmbientLightMenu.add(ambientLight, "intensity").name("Intensity").min(0).max(1).step(0.1).setValue(ambientLight.intensity).listen().onChange(function (value) {});
+        
         // DIRECTIONAL-LIGHT-MENU
         const guiDirectionalLightMenu = guiLightsMenu.addFolder(
           "DirectionalLight Menu"
         );
+        
         guiDirectionalLightMenu.add(directionalLight, "visible").name("On").setValue(directionalLight.visible).listen().onChange(function (value) {});
         
         guiDirectionalLightMenu.add(directionalLight.position, "x").name("x").min(-10).max(10).step(0.1).setValue(0).listen().onChange(function (value) {});
@@ -174,7 +160,6 @@
         });
         
         guiDirectionalLightMenu.add(directionalLight, "intensity").name("Intensity").min(0).max(1).step(0.1).setValue(directionalLight.intensity).listen().onChange(function (value) {});
-
 
         // MODELS MENUS
         guiModelAMenu = gui.addFolder("ModelsMenu");
@@ -232,8 +217,6 @@
                 }
             }
         });
-
-        //SIMULATION MENU
 
         // DRAW SCENE IN A RENDER LOOP (ANIMATION)
         renderLoop();
@@ -297,12 +280,12 @@
         }
       }
 
+      // ACTUALIZAR MATERIAL DE OBJETOS
       function updateMaterial() {
         const value = gui.__folders.SceneMenu.__controllers[0].object.Material;
         console.log(value);
         switch (value) {
           case "Texturas": // Material textura
-            //camera.setNearView();
             scenary.setTexture();
             break;
           case "Color": // Material color
@@ -316,6 +299,7 @@
         }
       }
 
+      // ACTUALIZAR ESCENA
       function updateScene() {
         if (model && model.animate) {
           model.position.z = model.position.z - 0.1;
@@ -366,22 +350,17 @@
           a.click();
         }
       }
-      // LIGHTS
 
       // CAMARA
       class Camera extends THREE.PerspectiveCamera {
-        constructor(
-          fov = 60,
-          aspect = window.innerWidth / window.innerHeight,
-          near = 0.1,
-          far = 1000
-        ) {
+        constructor(fov = 60, aspect = window.innerWidth / window.innerHeight, near = 0.1, far = 1000) {
           super(fov, aspect, near, far);
           this.insideCar = false;
           this.orbitControls = new OrbitControls(this, renderer.domElement);
           this.orbitControls.update();
           this.position.set(-80, 100, 300);
         }
+
         setPerspectiveView() {
           this.insideCar = false;
           this.position.set(-200, 250, 250);
