@@ -321,45 +321,6 @@ class CubeGroup extends THREE.Group {
     this.add(new Cube(92, -55, 40, 50, 15, 0x403244));
     this.add(new Cube(164, -56, 100, 52, 0.4, 0x808080));
   }
-    // CUBEGROUP
-/* Crea y agrupa cubos que representan los edificios en las avenidas
-class CubeGroup extends THREE.Group {
-  constructor() {
-    super();
-
-    //SW - TEC - SORIANA
-    this.add(new Cube(-57.5, 37.5, 20, 30, 10, 0x5ca1b1));    // Gasolinera-seven 
-    this.add(new Cube(-42.5, 37.5, 50, 40, 0.4, 0x808080));   // Estacionamiento seven
-    this.add(new Cube(-42.5, 69.5, 50, 20, 15, 0xc6d5d8));    // Taller
-    this.add(new Cube(-42.5, 96.5, 50, 30, 10, 0xef8f63));    // Peak a boo
-    this.add(new Cube(-42.5, 121.5, 50, 20, 0.4, 0x5aa897));  // Estacionamiento peak a boo
-    this.add(new Cube(-42.5, 218.5, 50, 170, 15, 0x325288));  // Tec
-    this.add(new Cube(-137, 92.5, 120, 50, 20, 0xd43a36));    // Soriana
-    this.add(new Cube(-137, 42.5, 120, 50, 0.4, 0x808080));   // Estacionamiento Soriana
-
-    //NW - RECINTO
-    this.add(new Cube(-115, -165, 195, 295, 15, 0xc7e988));   // Recinto de la paz
-
-    //SE - ESQUINA SQUARE MARKET
-    this.add(new Cube(45, 77.5, 55, 120, 25, 0xff414d));  // Square
-    this.add(new Cube(45, 159.5, 55, 40, 40, 0xebdfcf));  // Edificio en construccion 1
-    this.add(new Cube(45, 199, 55, 35, 10, 0xe9e9e9));    // Veterinaria
-    this.add(new Cube(45, 243.5, 55, 50, 50, 0xc2b2a3));  // Edificio en construccion 2
-    this.add(new Cube(45, 293, 55, 45, 7, 0xe9ca7c));     // Cochera
-
-    this.add(new Cube(92, 52.5, 35, 70, 10, 0xbce5e5));   // Guarderia
-    this.add(new Cube(124, 52.5, 25, 70, 10, 0xdfc159));  // Edificio en construccion 3
-    this.add(new Cube(168.5, 52.5, 60, 70, 20, 0xa2d0c0));// Plaza
-
-    // NE - WALMART
-    this.add(new Cube(37.5, -57.5, 40, 20, 10, 0xd54e2f));      // Oxxo
-    this.add(new Cube(37.5, -32.5, 40, 30, 0.4, 0x808080));     // Estacionamiento Oxxo
-    this.add(new Cube(77.5, -129.5, 120, 120, 0.4, 0x808080));  // Estacionamiento Walmart
-    this.add(new Cube(169.5, -129.5, 64, 120, 20, 0x2e82c1));   // Walmart
-    this.add(new Cube(52.5, -251.5, 70, 120, 10, 0xb3dbac));    // Comida japonesa
-    this.add(new Cube(79.5, -42.5, 40, 50, 15, 0x403244));      // Restaurant
-    this.add(new Cube(151.5, -43.5, 100, 52, 0.4, 0x808080));   // Estacionamiento Walmart
-  }
   setWireframe() {
     this.children.forEach((element) => {
       element.setWireframe();
@@ -371,7 +332,6 @@ class CubeGroup extends THREE.Group {
       element.setColor();
     });
   }
-}*/
 }
 // TRAFFICLIGHT
 // Semaforo objeto tipo obj
@@ -589,306 +549,52 @@ class BuildingGroup extends THREE.Group {
     this.add(new Floor(0, -0.2, 0, 1050, 0x808080, 0x808080)) // Floor
 
     //SW - TEC - SORIANA
-    /*this.add(
-      new Building(
-        -70,
-        50,
-        20,
-        30,
-        10,
-        "./textures/buildings/seven_",
-        0x0c0c0c
-      )
-    ); // Gasolinera-seven
-    this.add(
-      new BuildingFloor(
-        -55,
-        50,
-        50,
-        40,
-        0.4,
-        "./textures/seven_parking.png",
-        0x5aa897
-      )
-    );
-    this.add(
-      new Building(
-        -55,
-        82,
-        50,
-        20,
-        15,
-        "./textures/buildings/taller_",
-        0xd9dad1
-      )
-    ); // Tires
+    this.add(new Building(  -70,  50,  20,  30,  10,  "seven_front.png", "seven_back.png", "seven_side.png", 0x544C42)); // Gasolinera-seven -57.5, 37.5, 20, 40, 10, "./textures/seven_front.png"
+    this.add(new BuildingFloor(  -55,  50,  50,  40,  0.4,  "./textures/seven_parking.png",  0x5aa897));
+    this.add(new Building(  -55,  82,  50,  20,  10,  "taller_front.png", "taller_back.png", "taller_side.png",  0xd9dad1)); // Tires
+    this.add(new Building(  -55,  109,  50,  30,  10, "kinder_front.png", "kinder_back.png", "kinder_back.png",  0xF4F4F4)); // Peak a bo
+    this.add(new BuildingFloor(  -55,  134,  50,  20,  0.4,  "./textures/kinder_parking.png",  0x5aa897));
+    this.add(new Building(-55, 186, 50, 80, 50,"resi_front.png",  "resi.png",  "resi.png", 0xF07348));// resi
+    this.add(new Building(-55, 253, 50, 50, 20,"tec_front.png",  "tec.png",  "tec.png", 0xD5D5D5));// Tec
 
-    this.add(
-      new Building(
-        -55,
-        109,
-        50,
-        30,
-        10,
-        "./textures/buildings/kinder_",
-        0xef8f63
-      )
-    ); // Peak a bo
-    this.add(
-      new BuildingFloor(
-        -55,
-        134,
-        50,
-        20,
-        0.4,
-        "./textures/kinder_parking.png",
-        0x5aa897
-      )
-    );
-
-    //this.add(new Building(-42.5, 218.5, 50, 170, 15,"./textures/buildings/tec_", 0x325288));// Tec
-
-    this.soriana = new Building(
-      -149.5,
-      105,
-      50,
-      120,
-      20,
-      "./textures/buildings/soriana_",
-      0xd43a36
-    );
-    this.soriana.rotation.y = Math.PI / 2;
-    this.add(this.soriana); // Soriana
-    this.add(
-      new BuildingFloor(
-        -149.5,
-        55,
-        120,
-        50,
-        0.4,
-        "./textures/soriana_parking.png",
-        0x5aa897
-      )
-    ); //soriana
-
-    //NW - RECINTO
-    this.add(
-      new Building(
-        -127.5,
-        -177.5,
-        195,
-        295,
-        15,
-        "./textures/buildings/recinto_",
-        0xc7e988
-      )
-    ); // recinto
-
-    //SE - ESQUINA SQUARE MARKET
-    this.add(
-      new Building(
-        57.5,
-        90,
-        55,
-        120,
-        25,
-        "./textures/buildings/square_",
-        0xff414d
-      )
-    ); // Square
-
-    this.add(
-      new Building(
-        57.5,
-        172,
-        55,
-        40,
-        40,
-        "./textures/buildings/build2_",
-        0xd5cdba
-      )
-    ); // Edificio en construccion 1
-    this.add(
-      new Building(57.5, 211.5, 55, 35, 10, "./textures/buildings/pet_", 0xe9e9e9)
-    ); // pet
-    this.add(
-      new Building(
-        57.5,
-        256,
-        55,
-        50,
-        50,
-        "./textures/buildings/build_",
-        0xc2b2a3
-      )
-    ); // Edificio en construccion 2
-
-    this.add(
-      new Building(57.5, 305.5, 55, 45, 7, "./textures/buildings/porton_", 0xe9ca7c)
-    ); // Cochera
-
-    this.add(
-      new Building(
-        104.5,
-        65,
-        35,
-        70,
-        10,
-        "./textures/buildings/school_",
-        0xbce5e5
-      )
-    ); // Guarderia
-    this.add(
-      new Building(
-        136.6,
-        65,
-        25,
-        70,
-        10,
-        "./textures/buildings/const_",
-        0x808080
-      )
-    ); // Edificio en construccion 3
-    this.add(
-      new Building(
-        181,
-        65,
-        60,
-        70,
-        20,
-        "./textures/buildings/plaza_",
-        0x767b84
-      )
-    ); // Plaza
-
-    // NE - WALMART
-    this.oxxo = new Building(
-      50,
-      -70,
-      20,
-      40,
-      10,
-      "./textures/buildings/oxxo_",
-      0xe53f39
-    );
-    this.oxxo.rotation.y = -Math.PI / 2;
-    this.add(this.oxxo); // Gasolinera
-    this.add(
-      new BuildingFloor(
-        50,
-        -45,
-        40,
-        30,
-        0.4,
-        "./textures/kinder_parking.png",
-        0x5aa897
-      )
-    );
-
-    this.add(
-      new BuildingFloor(
-        90,
-        -142,
-        120,
-        120,
-        0.3,
-        "./textures/walmart_parking.png",
-        0xa7d0cd
-      )
-    ); // Walmart
-    this.walmart = new Building(
-      182,
-      -142,
-      64,
-      120,
-      20,
-      "./textures/buildings/walmart_",
-      0x2e82c1
-    );
-    this.walmart.rotation.y = Math.PI;
-    this.add(this.walmart);
-
-    this.add(
-      new Building(
-        65,
-        -264,
-        70,
-        120,
-        10,
-        "./textures/buildings/valle_",
-        0xb3dbac
-      )
-    ); // Valle real
-
-    this.restaurant = new Building(
-      92,
-      -55,
-      50,
-      40,
-      15,
-      "./textures/buildings/rest_",
-      0x404040
-    );
-    this.restaurant.rotation.y = -Math.PI / 2;
-    this.add(this.restaurant);
-
-    this.add(
-      new BuildingFloor(
-        164,
-        -56,
-        100,
-        52,
-        0.4,
-        "./textures/walmart_parking_av.png",
-        0x5aa897
-      )
-    );*/
-    this.add(new Building(  -57.5,  37.5,  20,  30,  10,  "seven_front.png", "seven_back.png", "seven_side.png", 0x544C42)); // Gasolinera-seven -57.5, 37.5, 20, 40, 10, "./textures/seven_front.png"
-    this.add(new BuildingFloor(  -42.5,  37.5,  50,  40,  0.4,  "./textures/seven_parking.png",  0x5aa897));
-    this.add(new Building(  -42.5,  69.5,  50,  20,  10,  "taller_front.png", "taller_back.png", "taller_side.png",  0xd9dad1)); // Tires
-    this.add(new Building(  -42.5,  96.5,  50,  30,  10, "kinder_front.png", "kinder_back.png", "kinder_back.png",  0xF4F4F4)); // Peak a bo
-    this.add(new BuildingFloor(  -42.5,  121.5,  50,  20,  0.4,  "./textures/kinder_parking.png",  0x5aa897));
-    this.add(new Building(-42.5, 173.5, 50, 80, 50,"resi_front.png",  "resi.png",  "resi.png", 0xF07348));// resi
-    this.add(new Building(-42.5, 240.5, 50, 50, 20,"tec_front.png",  "tec.png",  "tec.png", 0xD5D5D5));// Tec
-
-    this.soriana = new Building( -137, 92.5, 50, 120, 20, "soriana_front.png", "soriana_back.png", "soriana_side.png", 0xD43A36 );
+    this.soriana = new Building( -149.5, 105, 50, 120, 20, "soriana_front.png", "soriana_back.png", "soriana_side.png", 0xD43A36 );
     this.soriana.rotation.y = Math.PI / 2;
     this.add(this.soriana); // Soriana
 
-    this.add(new BuildingFloor(  -137,  42.5,  120,  50,  0.4,  "./textures/soriana_parking.png",  0x5aa897)); //soriana
+    this.add(new BuildingFloor(  -149.5,  55,  120,  50,  0.4,  "./textures/soriana_parking.png",  0x5aa897)); //soriana
 
     //NW - RECINTO
-    this.add(new Building(  -115,  -165,  195,  295,  15,  "recinto.png",  "recinto.png",  "recinto.png",  0xA5E1FB)); // recinto
+    this.add(new Building(  -127.5,  -177.5,  195,  295,  15,  "recinto.png",  "recinto.png",  "recinto.png",  0xA5E1FB)); // recinto
 
     //SE - ESQUINA SQUARE MARKET
-    this.add(new Building(  45,  77.5,  55,  120,  25, "square_front.png", "square_back.png", "square_side.png",  0xff414d)); // Square
-    this.add(new Building(  45,  159.5,  55,  40,  35, "build1.png", "build1_back.png", "build1.png",  0xBAA8A8)); // Edificio en construccion 1
-    this.add(new Building(45, 199, 55, 35, 10, "pet.png", "pet_back.png", "pet.png", 0xFFFEF1)); // pet
-    this.add(new Building(  45,  243.5,  55,  50,  40, "build2.png", "build2_back.png", "build2.png",  0xffffff)); // Edificio en construccion 
-    this.add(new Building(45, 293, 55, 45, 7, "porton.png", "porton_back.png", "porton.png", 0xe9ca7c)); // Cochera
-    this.add(new Building(  92,  52.5,  35,  70,  10,"school.png", "school.png", "school_side.png",  0xEEDBFD)); // Guarderia
-    this.add(new Building(  124,  52.5,  25,  70,  10,  "const.png", "const.png", "const_side.png",  0x808080)); // Edificio en construccion 3
-    this.add(new Building(  168.5,  52.5,  60,  70,  20,  "plaza.png", "plaza.png", "plaza_side.png",  0x939AB3)); // Plaza
+    this.add(new Building(  57.5,  90,  55,  120,  25, "square_front.png", "square_back.png", "square_side.png",  0xff414d)); // Square
+    this.add(new Building(  57.5,  172,  55,  40,  35, "build1.png", "build1_back.png", "build1.png",  0xBAA8A8)); // Edificio en construccion 1
+    this.add(new Building(57.5, 211.5, 55, 35, 10, "pet.png", "pet_back.png", "pet.png", 0xFFFEF1)); // pet
+    this.add(new Building(  57.5,  256,  55,  50,  40, "build2.png", "build2_back.png", "build2.png",  0xffffff)); // Edificio en construccion 
+    this.add(new Building(57.5, 305.5, 55, 45, 7, "porton.png", "porton_back.png", "porton.png", 0xe9ca7c)); // Cochera
+    this.add(new Building(  104.5,  65,  35,  70,  10,"school.png", "school.png", "school_side.png",  0xEEDBFD)); // Guarderia
+    this.add(new Building(  136.5,  65,  25,  70,  10,  "const.png", "const.png", "const_side.png",  0x808080)); // Edificio en construccion 3
+    this.add(new Building(  181,  65,  60,  70,  20,  "plaza.png", "plaza.png", "plaza_side.png",  0x939AB3)); // Plaza
 
     // NE - WALMART
-    this.oxxo = new Building( 37.5, -57.5, 20, 40, 10, "oxxo_front.png", "oxxo.png", "oxxo.png", 0xe53f39);
+    this.oxxo = new Building( 50, -70, 20, 40, 10, "oxxo_front.png", "oxxo.png", "oxxo.png", 0xe53f39);
     this.oxxo.rotation.y = -Math.PI / 2;
     this.add(this.oxxo); // Gasolinera
     
-    this.add(new BuildingFloor(  37.5,  -32.5,  40,  30,  0.4,  "./textures/kinder_parking.png",  0x5aa897));
-    this.add(new BuildingFloor( 77.5, -129.5, 120, 120, 0.3, "./textures/walmart_parking.png", 0xa7d0cd)); // Walmart
-    
-    this.walmart = new Building( 169.5, -129.5, 64, 120, 20, "walmart_front.png", "walmart_back.png", "walmart_side.png", 0x2e82c1);
+    this.add(new BuildingFloor(  50,  -55,  40,  30,  0.4,  "./textures/kinder_parking.png",  0x5aa897));
+    this.add(new BuildingFloor( 90, -142, 120, 120, 0.3, "./textures/walmart_parking.png", 0xa7d0cd)); // Walmart
+
+    this.walmart = new Building( 182, -142 , 64, 120, 20, "walmart_front.png", "walmart_back.png", "walmart_side.png", 0x2e82c1);
     this.walmart.rotation.y = Math.PI;
     this.add(this.walmart);
 
-    this.add(new Building( 52.5, -251.5, 70, 120, 15, "valle.png", "valle_back.png", "valle.png", 0x0F272F)); // Valle real
+    this.add(new Building( 65, -264, 70, 120, 15, "valle.png", "valle_back.png", "valle.png", 0x0F272F)); // Valle real
 
-    this.restaurant = new Building( 79.5, -42.5, 50, 40, 15, "rest_front.png", "rest.png","rest.png", 0x404040);
+    this.restaurant = new Building( 92, -55, 50, 40, 15, "rest_front.png", "rest.png","rest.png", 0x404040);
     this.restaurant.rotation.y = -Math.PI / 2;
     this.add(this.restaurant);
 
-    this.add(new BuildingFloor(  151.5,  -43.5,  100,  52,  0.4,  "./textures/walmart_parking_av.png",  0x5aa897));
+    this.add(new BuildingFloor( 164,  -56,  100,  52,  0.4,  "./textures/walmart_parking_av.png",  0x5aa897));
   }
 
   setTexture() {
