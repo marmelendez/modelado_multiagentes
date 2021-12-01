@@ -44,9 +44,12 @@
         scenary,
         ambientLight,
         directionalLight,
+        data,
+        simulationSize,
         cars = [],
         simulation,
-        dataReady = false;
+        dataReady = false,
+        frame = 0;
       window.visible = true;
       window.wireframe = true;
       window.color = true;
@@ -67,7 +70,6 @@
 
         // MODELS
         scenary = new Scenary();
-        model = new Car(); //0,200
 
         // SCENE GRAPH
         scene.add(scenary);
@@ -128,7 +130,7 @@
         // Generates a JSON file with the parameters chosen by the user
         guiSimulationMenu.add(simulation, "to_json").name("GENERATE SIMULATION"); 
 
-        guiSimulationMenu.open();
+        // guiSimulationMenu.open();
         // SCENE-MENU
         const guiSceneMenu = gui.addFolder("SceneMenu");
         var text = { Material: "Texturas" };
@@ -276,7 +278,41 @@
             }
         });
 
-        //SIMULATION MENU
+        // SIMULATION MENU
+
+        // READ JSON DATA
+        readTextFile('./simul_data.json', function(text){
+                data = JSON.parse(text);
+
+                // LOAD CARS
+                simulationSize = data.size[0].size
+                for(let i = 0; i < data.cars.length; i++){
+                    const id =  data.cars[i].id;
+                    const x =  (data.cars[i].x - (simulationSize/2))/ 10;
+                    const z =  (data.cars[i].z - (simulationSize/2))/ 10;
+                    const dir = data.cars[i].dir;
+                    const type = data.cars[i].type;
+
+                    var car = new Car()
+                    car.position.set(x, 0, z);
+                    car.rotation.y = dir * Math.PI / 180 + Math.PI;
+                    car.name = id;
+                    scene.add(car);
+                }
+                // LOAD TRAFFIC LIGHTS
+                var colors = ['0x79de79', '0xffff00', '0xcc0000']
+                scenary.trafficLightsLow.traffic1.setColor(colors[data.semaphores[0].state]);
+                scenary.trafficLightsLow.traffic2.setColor(colors[data.semaphores[1].state]);
+                scenary.trafficLightsLow.traffic3.setColor(colors[data.semaphores[2].state]);
+                scenary.trafficLightsLow.traffic4.setColor(colors[data.semaphores[3].state]);
+
+                scenary.trafficLightsHigh.traffic1.setColor(colors[data.semaphores[0].state]);
+                scenary.trafficLightsHigh.traffic2.setColor(colors[data.semaphores[1].state]);
+                scenary.trafficLightsHigh.traffic3.setColor(colors[data.semaphores[2].state]);
+                scenary.trafficLightsHigh.traffic4.setColor(colors[data.semaphores[3].state]);
+
+                dataReady = true;
+            });
 
         // DRAW SCENE IN A RENDER LOOP (ANIMATION)
         renderLoop();
@@ -284,37 +320,39 @@
 
       function renderLoop() {
         stats.begin();
+        setTimeout( function() {
+            requestAnimationFrame( renderLoop);
+        }, 1000 / 30 );
         renderer.render(scene, camera); // DRAW THE SCENE GRAPH
         updateScene();
         stats.end();
-        requestAnimationFrame(renderLoop);
       }
 
-      // INICIALIZAR AUTOS
-      function createCar() {
-        for (let i = 0; i < data.cars.length; i++) {
-          // Obtener valores de json
-          const id = data.cars[i].id;
-          const x = data.cars[i].x;
-          const z = data.cars[i].z;
-          const dir = data.cars[i].dir;
+      // INICIALIZAR AUTOS --- comentada por que haste el momento no se usa
+      // function createCar() {
+      //   for (let i = 0; i < data.cars.length; i++) {
+      //     // Obtener valores de json
+      //     const id = data.cars[i].id;
+      //     const x = data.cars[i].x;
+      //     const z = data.cars[i].z;
+      //     const dir = data.cars[i].dir;
 
-          let newCar;
+      //     let newCar;
 
-          // Definir rotación según la dirección del auto
-          if (dir == 1) {
-            newCar = new Car(-7.5, z - 250, true, id, colors[i]);
-          } else {
-            newCar = new Car(7.5, z - 250, false, id, colors[i]);
-          }
+      //     // Definir rotación según la dirección del auto
+      //     if (dir == 1) {
+      //       newCar = new Car(-7.5, z - 250, true, id, colors[i]);
+      //     } else {
+      //       newCar = new Car(7.5, z - 250, false, id, colors[i]);
+      //     }
 
-          // Agregar carro a lista
-          newCar.name = id;
-          cars.push(newCar);
-        }
+      //     // Agregar carro a lista
+      //     newCar.name = id;
+      //     cars.push(newCar);
+      //   }
 
-        dataReady = true;
-      }
+      //   dataReady = true;
+      // }
 
       // ACTUALIZAR VISTAS
       function updateView() {
@@ -371,6 +409,46 @@
         if (camera.insideCar) {
           camera.position.z = model.position.z - 0.2;
         }
+
+        if(dataReady){
+               if( frame < data.frames.length ){
+                    // console.log('Frame: ', frame);
+                    for(let i = 0; i < data.frames[frame].cars.length; i++){
+                        const id =  data.frames[frame].cars[i].id;
+                        const x =  (data.frames[frame].cars[i].x - (simulationSize/2))/ 10;
+                        const z =  (data.frames[frame].cars[i].z - (simulationSize/2))/ 10;
+                        const dir = data.frames[frame].cars[i].dir;
+                        var car = scene.getObjectByName(id);
+                        
+                        if(!car){
+                          var car = new Car()
+                          car.position.set(x, 0, z);
+                          car.rotation.y = dir * Math.PI / 180 + Math.PI;
+                          car.name = id;
+                          scene.add(car);
+                        }
+                        else{
+                          car.position.set(x, 0, z);
+                          car.rotation.y = dir * Math.PI / 180 + Math.PI;
+                        }
+                    }
+
+                        // LOAD TRAFFIC LIGHTS
+                    var colors = ['0x79de79', '0xffff00', '0xcc0000']
+                    scenary.trafficLightsLow.traffic1.setColor(colors[data.frames[frame].semaphores[0].state]);
+                    scenary.trafficLightsLow.traffic2.setColor(colors[data.frames[frame].semaphores[1].state]);
+                    scenary.trafficLightsLow.traffic3.setColor(colors[data.frames[frame].semaphores[2].state]);
+                    scenary.trafficLightsLow.traffic4.setColor(colors[data.frames[frame].semaphores[3].state]);
+
+                    scenary.trafficLightsHigh.traffic1.setColor(colors[data.frames[frame].semaphores[0].state]);
+                    scenary.trafficLightsHigh.traffic2.setColor(colors[data.frames[frame].semaphores[1].state]);
+                    scenary.trafficLightsHigh.traffic3.setColor(colors[data.frames[frame].semaphores[2].state]);
+                    scenary.trafficLightsHigh.traffic4.setColor(colors[data.frames[frame].semaphores[3].state]);
+                    frame++;
+               }
+           }
+
+
       }
 
       // EVENT LISTENERS & HANDLERS
@@ -386,6 +464,20 @@
         false
       );
 
+      // read text file function
+      function readTextFile(file, callback) {
+          var rawFile = new XMLHttpRequest();
+          rawFile.overrideMimeType("application/json");
+          rawFile.open("GET", file, true);
+          rawFile.onreadystatechange = function() {
+              if (rawFile.readyState === 4 && rawFile.status == "200") {
+                  callback(rawFile.responseText);
+              }
+          }
+          rawFile.send(null);
+      }
+
+      // SIMULATION PARAMETERS
       class Simulation {
         constructor(step_time = 0.1, size = 1000, green = 5, yellow = 0, red = 5, cars = 10, steps = 1000){
           this.step_time = step_time;

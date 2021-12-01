@@ -356,6 +356,8 @@ class AvenueModel(ap.Model):
 
         # Archivo json
         self.data = {}
+        self.data['size'] = []
+        self.data['size'].append({'size': self.p.size})
         self.data['cars'] = []
         self.data['semaphores'] = []
         self.data['frames'] = []

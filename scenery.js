@@ -51,7 +51,8 @@ class Street extends THREE.Group {
     x = 0,
     z = 0,
     rX = 1,
-    rY = 1
+    rY = 1,
+    y = 0
   ) {
     super();
     this.visible = true;
@@ -72,7 +73,7 @@ class Street extends THREE.Group {
     this.texture.wrapS = THREE.RepeatWrapping;
     this.texture.wrapT = THREE.RepeatWrapping;
     this.texture.repeat.set(rX, rY);
-    this.position.set(this.x, 0, this.z);
+    this.position.set(this.x, y, this.z);
     // CHILDREN
     this.add(this.mesh);
   }
@@ -85,64 +86,65 @@ class Intersection extends THREE.Group {
   constructor() {
     super();
     this.visible = true;
-    this.cross = new Street(25, 25, "./textures/center_street.png");
+    this.cross = new Street(50, 50, "./textures/center_street.png", 0, 0, 1, 1, 0.01);
 
-    this.crosswalk1 = new Street(25, 5, "./textures/crosswalk.png", 0, 15);
-    this.crosswalk2 = new Street(25, 5, "./textures/crosswalk.png", 0, -15);
+    this.crosswalk1 = new Street(50, 5, "./textures/crosswalk.png", 0, 27.5, 1, 1, 0.01);
+    this.crosswalk2 = new Street(50, 5, "./textures/crosswalk.png", 0, -27.5, 1, 1, 0.01);
     this.crosswalk2.rotation.y = Math.PI;
-    this.crosswalk3 = new Street(25, 5, "./textures/crosswalk.png", 15, 0);
+    this.crosswalk3 = new Street(50, 5, "./textures/crosswalk.png", 27.5, 0, 1, 1, 0.01);
     this.crosswalk3.rotation.y = Math.PI / 2;
-    this.crosswalk4 = new Street(25, 5, "./textures/crosswalk.png", -15, 0);
+    this.crosswalk4 = new Street(50, 5, "./textures/crosswalk.png", -27.5, 0, 1, 1, 0.01);
     this.crosswalk4.rotation.y = -Math.PI / 2;
 
     this.street1 = new Street(
-      25,
-      300,
+      50,
+      500,
       "./textures/street.png",
       0,
-      167.5,
+      267.5,
       1,
       20
     );
     this.street2 = new Street(
-      25,
-      300,
+      50,
+      500,
       "./textures/street.png",
       0,
-      -167.5,
+      -267.5,
       1,
       20
     );
     this.street3 = new Street(
-      25,
-      200,
+      50,
+      500,
       "./textures/street.png",
-      -117.5,
+      -267.5,
       0,
       1,
       13
     );
     this.street3.rotation.y = Math.PI / 2;
     this.street4 = new Street(
-      25,
-      200,
+      50,
+      500,
       "./textures/street.png",
-      117.5,
+      267.5,
       0,
       1,
       13
     );
     this.street4.rotation.y = Math.PI / 2;
 
+    
+    this.add(this.street1);
+    this.add(this.street2);
+    this.add(this.street3);
+    this.add(this.street4);
     this.add(this.cross);
     this.add(this.crosswalk1);
     this.add(this.crosswalk2);
     this.add(this.crosswalk3);
     this.add(this.crosswalk4);
-    this.add(this.street1);
-    this.add(this.street2);
-    this.add(this.street3);
-    this.add(this.street4);
   }
 
   setVisible(value = true) {
@@ -199,10 +201,10 @@ class SidewalkGroup extends THREE.Group {
     super();
     this.visible = true;
 
-    this.sidewalk1 = new Sidewalk(-115, -165);
-    this.sidewalk2 = new Sidewalk(-115, 165);
-    this.sidewalk3 = new Sidewalk(115, -165);
-    this.sidewalk4 = new Sidewalk(115, 165);
+    this.sidewalk1 = new Sidewalk(-127.5, -177.5);
+    this.sidewalk2 = new Sidewalk(-127.5, 177.5);
+    this.sidewalk3 = new Sidewalk(127.5, -177.5);
+    this.sidewalk4 = new Sidewalk(127.5, 177.5);
 
     this.add(this.sidewalk1);
     this.add(this.sidewalk2);
@@ -278,37 +280,37 @@ class CubeGroup extends THREE.Group {
   constructor() {
     super();
     //SW - TEC - SORIANA
-    this.add(new Cube(-57.5, 37.5, 20, 30, 10, 0x5ca1b1)); // Gasolinera-seven -57.5, 37.5, 20, 40, 10, "./textures/seven_front.png"
-    this.add(new Cube(-42.5, 37.5, 50, 40, 0.4, 0x808080));
-    this.add(new Cube(-42.5, 69.5, 50, 20, 15, 0xc6d5d8)); // Tires
-    this.add(new Cube(-42.5, 96.5, 50, 30, 10, 0xef8f63)); // Peak a bo
-    this.add(new Cube(-42.5, 121.5, 50, 20, 0.4, 0x5aa897));
-    this.add(new Cube(-42.5, 218.5, 50, 170, 15, 0x325288)); // Tec
-    this.add(new Cube(-137, 92.5, 120, 50, 20, 0xd43a36)); // Soriana
-    this.add(new Cube(-137, 42.5, 120, 50, 0.4, 0x808080)); //soriana
+    this.add(new Cube(-70, 50, 20, 30, 10, 0x5ca1b1)); // Gasolinera-seven
+    this.add(new Cube(-55, 50, 50, 40, 0.4, 0x808080));
+    this.add(new Cube(-55, 82, 50, 20, 15, 0xc6d5d8)); // Tires
+    this.add(new Cube(-55, 109, 50, 30, 10, 0xef8f63)); // Peak a bo
+    this.add(new Cube(-55, 134, 50, 20, 0.4, 0x5aa897));
+    this.add(new Cube(-55, 231, 50, 170, 15, 0x325288)); // Tec
+    this.add(new Cube(-149.5, 105, 120, 50, 20, 0xd43a36)); // Soriana
+    this.add(new Cube(-149.5, 55, 120, 50, 0.4, 0x808080)); //soriana
 
     //NW - RECINTO
-    this.add(new Cube(-115, -165, 195, 295, 15, 0xc7e988)); // recinto
+    this.add(new Cube(-127.5, -177.5, 195, 295, 15, 0xc7e988)); // recinto
 
     //SE - ESQUINA SQUARE MARKET
-    this.add(new Cube(45, 77.5, 55, 120, 25, 0xff414d)); // Square
-    this.add(new Cube(45, 159.5, 55, 40, 40, 0xebdfcf)); // Edificio en construccion 1
-    this.add(new Cube(45, 199, 55, 35, 10, 0xe9e9e9)); // pet
-    this.add(new Cube(45, 243.5, 55, 50, 50, 0xc2b2a3)); // Edificio en construccion 2
-    this.add(new Cube(45, 293, 55, 45, 7, 0xe9ca7c)); // Cochera
+    this.add(new Cube(57.5, 90, 55, 120, 25, 0xff414d)); // Square
+    this.add(new Cube(57.5, 172, 55, 40, 40, 0xebdfcf)); // Edificio en construccion 1
+    this.add(new Cube(57.5, 211.5, 55, 35, 10, 0xe9e9e9)); // pet
+    this.add(new Cube(57.5, 256, 55, 50, 50, 0xc2b2a3)); // Edificio en construccion 2
+    this.add(new Cube(57.5, 305.5, 55, 45, 7, 0xe9ca7c)); // Cochera
 
-    this.add(new Cube(92, 52.5, 35, 70, 10, 0xbce5e5)); // Guarderia
-    this.add(new Cube(124, 52.5, 25, 70, 10, 0xdfc159)); // Edificio en construccion 3
-    this.add(new Cube(168.5, 52.5, 60, 70, 20, 0xa2d0c0)); // Plaza
+    this.add(new Cube(104.5, 65, 35, 70, 10, 0xbce5e5)); // Guarderia
+    this.add(new Cube(136.5, 65, 25, 70, 10, 0xdfc159)); // Edificio en construccion 3
+    this.add(new Cube(181, 65, 60, 70, 20, 0xa2d0c0)); // Plaza
 
     // NE - WALMART
-    this.add(new Cube(37.5, -57.5, 40, 20, 10, 0xd54e2f)); // Gasolinera
-    this.add(new Cube(37.5, -32.5, 40, 30, 0.4, 0x808080));
-    this.add(new Cube(77.5, -129.5, 120, 120, 0.4, 0x808080)); // Walmart
-    this.add(new Cube(169.5, -129.5, 64, 120, 20, 0x2e82c1));
-    this.add(new Cube(52.5, -251.5, 70, 120, 10, 0xb3dbac)); // Valle real
-    this.add(new Cube(79.5, -42.5, 40, 50, 15, 0x403244));
-    this.add(new Cube(151.5, -43.5, 100, 52, 0.4, 0x808080));
+    this.add(new Cube(50, -70, 40, 20, 10, 0xd54e2f)); // Gasolinera
+    this.add(new Cube(50, -45, 40, 30, 0.4, 0x808080));
+    this.add(new Cube(90, -142, 120, 120, 0.4, 0x808080)); // Walmart
+    this.add(new Cube(182, -142, 64, 120, 20, 0x2e82c1));
+    this.add(new Cube(65, -264, 70, 120, 10, 0xb3dbac)); // Valle real
+    this.add(new Cube(92, -55, 40, 50, 15, 0x403244));
+    this.add(new Cube(164, -56, 100, 52, 0.4, 0x808080));
   }
   setWireframe() {
     this.children.forEach((element) => {
@@ -380,21 +382,25 @@ class TrafficLight extends THREE.Group {
     bBox.setFromObject(this.solid);
     this.position.y = -bBox.min.y;
   }
-
-  setColor(color) {
-    this.mesh.material.color.setHex(color);
+  setColor(hexColor) {
+    this.color = hexColor;
+    this.traverse(function(child) {
+      if (child.isMesh) {
+          child.material.color.setHex(hexColor);
+      }
+    });
   }
 }
 
 class TrafficLightGroup extends THREE.Group {
   constructor() {
     super();
-    this.traffic1 = new TrafficLight(-7, -13);
-    this.traffic2 = new TrafficLight(7, 13);
+    this.traffic1 = new TrafficLight(-19.5, 25.5);
+    this.traffic2 = new TrafficLight(19.5, -25.5);
     this.traffic2.rotation.y = Math.PI;
-    this.traffic3 = new TrafficLight(-13, 7);
+    this.traffic3 = new TrafficLight(25.5, 19.5);
     this.traffic3.rotation.y = Math.PI / 2;
-    this.traffic4 = new TrafficLight(13, -7);
+    this.traffic4 = new TrafficLight(-25.5, -19.5);
     this.traffic4.rotation.y = -Math.PI / 2;
 
     this.add(this.traffic1);
@@ -539,19 +545,19 @@ class BuildingGroup extends THREE.Group {
     //SW - TEC - SORIANA
     this.add(
       new Building(
-        -57.5,
-        37.5,
+        -70,
+        50,
         20,
         30,
         10,
         "./textures/buildings/seven_",
         0x0c0c0c
       )
-    ); // Gasolinera-seven -57.5, 37.5, 20, 40, 10, "./textures/seven_front.png"
+    ); // Gasolinera-seven
     this.add(
       new BuildingFloor(
-        -42.5,
-        37.5,
+        -55,
+        50,
         50,
         40,
         0.4,
@@ -561,8 +567,8 @@ class BuildingGroup extends THREE.Group {
     );
     this.add(
       new Building(
-        -42.5,
-        69.5,
+        -55,
+        82,
         50,
         20,
         15,
@@ -573,8 +579,8 @@ class BuildingGroup extends THREE.Group {
 
     this.add(
       new Building(
-        -42.5,
-        96.5,
+        -55,
+        109,
         50,
         30,
         10,
@@ -584,8 +590,8 @@ class BuildingGroup extends THREE.Group {
     ); // Peak a bo
     this.add(
       new BuildingFloor(
-        -42.5,
-        121.5,
+        -55,
+        134,
         50,
         20,
         0.4,
@@ -597,8 +603,8 @@ class BuildingGroup extends THREE.Group {
     //this.add(new Building(-42.5, 218.5, 50, 170, 15,"./textures/buildings/tec_", 0x325288));// Tec
 
     this.soriana = new Building(
-      -137,
-      92.5,
+      -149.5,
+      105,
       50,
       120,
       20,
@@ -609,8 +615,8 @@ class BuildingGroup extends THREE.Group {
     this.add(this.soriana); // Soriana
     this.add(
       new BuildingFloor(
-        -137,
-        42.5,
+        -149.5,
+        55,
         120,
         50,
         0.4,
@@ -622,8 +628,8 @@ class BuildingGroup extends THREE.Group {
     //NW - RECINTO
     this.add(
       new Building(
-        -115,
-        -165,
+        -127.5,
+        -177.5,
         195,
         295,
         15,
@@ -635,8 +641,8 @@ class BuildingGroup extends THREE.Group {
     //SE - ESQUINA SQUARE MARKET
     this.add(
       new Building(
-        45,
-        77.5,
+        57.5,
+        90,
         55,
         120,
         25,
@@ -647,8 +653,8 @@ class BuildingGroup extends THREE.Group {
 
     this.add(
       new Building(
-        45,
-        159.5,
+        57.5,
+        172,
         55,
         40,
         40,
@@ -657,12 +663,12 @@ class BuildingGroup extends THREE.Group {
       )
     ); // Edificio en construccion 1
     this.add(
-      new Building(45, 199, 55, 35, 10, "./textures/buildings/pet_", 0xe9e9e9)
+      new Building(57.5, 211.5, 55, 35, 10, "./textures/buildings/pet_", 0xe9e9e9)
     ); // pet
     this.add(
       new Building(
-        45,
-        243.5,
+        57.5,
+        256,
         55,
         50,
         50,
@@ -672,13 +678,13 @@ class BuildingGroup extends THREE.Group {
     ); // Edificio en construccion 2
 
     this.add(
-      new Building(45, 293, 55, 45, 7, "./textures/buildings/porton_", 0xe9ca7c)
+      new Building(57.5, 305.5, 55, 45, 7, "./textures/buildings/porton_", 0xe9ca7c)
     ); // Cochera
 
     this.add(
       new Building(
-        92,
-        52.5,
+        104.5,
+        65,
         35,
         70,
         10,
@@ -688,8 +694,8 @@ class BuildingGroup extends THREE.Group {
     ); // Guarderia
     this.add(
       new Building(
-        124,
-        52.5,
+        136.6,
+        65,
         25,
         70,
         10,
@@ -699,8 +705,8 @@ class BuildingGroup extends THREE.Group {
     ); // Edificio en construccion 3
     this.add(
       new Building(
-        168.5,
-        52.5,
+        181,
+        65,
         60,
         70,
         20,
@@ -711,8 +717,8 @@ class BuildingGroup extends THREE.Group {
 
     // NE - WALMART
     this.oxxo = new Building(
-      37.5,
-      -57.5,
+      50,
+      -70,
       20,
       40,
       10,
@@ -723,8 +729,8 @@ class BuildingGroup extends THREE.Group {
     this.add(this.oxxo); // Gasolinera
     this.add(
       new BuildingFloor(
-        37.5,
-        -32.5,
+        50,
+        -45,
         40,
         30,
         0.4,
@@ -735,8 +741,8 @@ class BuildingGroup extends THREE.Group {
 
     this.add(
       new BuildingFloor(
-        77.5,
-        -129.5,
+        90,
+        -142,
         120,
         120,
         0.3,
@@ -745,8 +751,8 @@ class BuildingGroup extends THREE.Group {
       )
     ); // Walmart
     this.walmart = new Building(
-      169.5,
-      -129.5,
+      182,
+      -142,
       64,
       120,
       20,
@@ -758,8 +764,8 @@ class BuildingGroup extends THREE.Group {
 
     this.add(
       new Building(
-        52.5,
-        -251.5,
+        65,
+        -264,
         70,
         120,
         10,
@@ -769,8 +775,8 @@ class BuildingGroup extends THREE.Group {
     ); // Valle real
 
     this.restaurant = new Building(
-      79.5,
-      -42.5,
+      92,
+      -55,
       50,
       40,
       15,
@@ -782,8 +788,8 @@ class BuildingGroup extends THREE.Group {
 
     this.add(
       new BuildingFloor(
-        151.5,
-        -43.5,
+        164,
+        -56,
         100,
         52,
         0.4,
@@ -820,14 +826,16 @@ export default class Scenary extends THREE.LOD {
     this.low.add(new Skybox(1000));
     this.low.add(new Intersection());
     this.low.add(new SidewalkGroup());
-    this.low.add(new TrafficLightGroup());
+    this.trafficLightsLow = new TrafficLightGroup()
+    this.low.add(this.trafficLightsLow);
     this.low.add(new CubeGroup());
 
     this.high = new THREE.Group();
     this.high.add(new Skybox(1000));
     this.high.add(new Intersection());
     this.high.add(new SidewalkGroup());
-    this.high.add(new TrafficLightGroup());
+    this.trafficLightsHigh = new TrafficLightGroup()
+    this.high.add(this.trafficLightsHigh);
     this.high.add(new BuildingGroup());
 
     this.addLevel(this.high, 100);
