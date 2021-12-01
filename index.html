@@ -135,7 +135,7 @@
         guiCameraMenu.add(window, "multiview").setValue(window.multiview).name("Multiview").listen().onChange(function(value) {});
 
         guiCameraMenu.add(camera1.orbitControls, "autoRotate").setValue(camera1.orbitControls.autoRotate).name("Auto rotate").onChange(function (value) {  
-            camera.setAutoRotate(value);
+            camera1.setAutoRotate(value);
         });
 
         guiCameraMenu.add(camera1, "reset").name("Reset");
@@ -172,7 +172,7 @@
         // MODELS MENUS
         guiModelAMenu = gui.addFolder("ModelsMenu");
         guiModelAMenu.add(window, "visible").name("Visible").setValue(window.visible).listen().onChange(function (value) {  
-            model.setVisible(value);
+            //model.setVisible(value);
             if (dataReady) {    
                 for (let i = 0; i < data.cars.length; i++) {      
                     let posCar = cars[i];      
@@ -183,7 +183,7 @@
         });
 
         guiModelAMenu.add(window, "wireframe").name("Wireframe").setValue(window.wireframe).listen().onChange(function (value) {
-            model.setMatWireframe(value);
+            //model.setMatWireframe(value);
             if (dataReady) {
                 for (let i = 0; i < data.cars.length; i++) {
                     let posCar = cars[i];
@@ -194,7 +194,7 @@
         });
 
         guiModelAMenu.add(window, "color").name("Color").setValue(window.color).listen().onChange(function (value) {
-            model.setMatColor(value);
+            //model.setMatColor(value);
             if (dataReady) {
                 for (let i = 0; i < data.cars.length; i++) {
                     let posCar = cars[i];
@@ -205,7 +205,7 @@
         });
 
         guiModelAMenu.addColor(window, "colorCar").name("Car color").setValue(window.colorCar).listen().onChange(function (value) {
-            model.setColor(value);
+            //model.setColor(value);
             if (dataReady) {
                 for (let i = 0; i < data.cars.length; i++) {
                     let posCar = cars[i];
@@ -216,7 +216,7 @@
         });
 
         guiModelAMenu.addColor(window, "colorWire").name("Wire color").setValue(window.colorWire).listen().onChange(function (value) {
-            model.setWireColor(value);
+            //model.setWireColor(value);
             if (dataReady) {
                 for (let i = 0; i < data.cars.length; i++) {
                     let posCar = cars[i];
@@ -246,6 +246,7 @@
                     car.rotation.y = dir * Math.PI / 180 + Math.PI;
                     car.name = id;
                     scene.add(car);
+                    cars.push(car);
                 }
                 // LOAD TRAFFIC LIGHTS
                 var colors = ['0x79de79', '0xffff00', '0xcc0000']
@@ -259,6 +260,7 @@
                 scenary.trafficLightsHigh.traffic3.setColor(colors[data.semaphores[2].state]);
                 scenary.trafficLightsHigh.traffic4.setColor(colors[data.semaphores[3].state]);
 
+                model = scene.getObjectByName(0);
                 dataReady = true;
             });
 
@@ -319,7 +321,10 @@
             camera1.setCrossView();
             break;
           case "Interior Auto": // Vista desde el interior del auto
-            camera1.setInModelView(model);
+            if (dataReady) {
+              var car = scene.getObjectByName(0);
+              camera1.setInModelView(car);
+            }  
             break;
           default:
             break;
@@ -565,8 +570,8 @@
 
         setInModelView(model) {
           this.insideCar = true;
-          this.position.set(model.position.x, 4.5, model.position.z);
-          this.orbitControls.target = new THREE.Vector3(0, 0, -400);
+          this.position.set(model.position.x, 2.5, model.position.z);
+          this.orbitControls.target = new THREE.Vector3(0, 0, 400);
           this.up.set(0, 1, 0);
           this.orbitControls.update();
         }

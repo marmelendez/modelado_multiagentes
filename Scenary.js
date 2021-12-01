@@ -30,7 +30,7 @@ class Skybox extends THREE.Mesh {
 // STREET
 // Crea la carretera de las calles
 class Street extends THREE.Group {
-  constructor(width = 100,height = 100,filename = "./textures/street.png",x = 0,z = 0,rS = 1,rT = 1) {
+  constructor(width = 100,height = 100,filename = "./textures/street.png",x = 0,z = 0,rS = 1,rT = 1, y = 0) {
     super();
     // Atributos
     this.visible = true;
@@ -39,6 +39,7 @@ class Street extends THREE.Group {
     this.filename = filename;
     this.x = x;
     this.z = z;
+    this.y = y;
     
     // Geometria y material
     const geometry = new THREE.PlaneGeometry(this.width, this.height);
@@ -53,7 +54,7 @@ class Street extends THREE.Group {
     this.texture.repeat.set(rS, rT);
     
     // Posicion
-    this.position.set(this.x, 0, this.z);
+    this.position.set(this.x, this.y, this.z);
     this.add(this.mesh);
   }
 
@@ -147,7 +148,7 @@ class Sidewalk extends THREE.Mesh {
     this.material = new THREE.MeshBasicMaterial({ map: texture });
     this.materialTexture = this.material;
     this.materialWire = new THREE.MeshBasicMaterial({wireframe: true,color: 0xffffff,});
-    this.materialColor = new THREE.MeshBasicMaterial({ color: 0x808080 });
+    this.materialColor = new THREE.MeshBasicMaterial({ color: 0xBBBBBB });
     
     this.position.set(x, 0, z);
     this.setOnFloor();
@@ -274,6 +275,11 @@ class Floor extends THREE.Mesh {
     this.materialColor = new THREE.MeshBasicMaterial({ color: this.color });
     this.material = this.materialColor;
   }
+
+  setTexture() {
+    this.material = this.materialColor;
+  }
+
   setWireframe() {
     this.material = this.materialWire;
   }
@@ -546,7 +552,7 @@ class BuildingGroup extends THREE.Group {
   constructor() {
     super();
     // FLOOR
-    this.add(new Floor(0, -0.2, 0, 900, 0x808080, 0x808080)) // Floor
+    this.add(new Floor(0, -0.2, 0, 900, 0xBBBBBB, 0xBBBBBB)) // Floor
 
     //SW - TEC - SORIANA
     this.add(new Building(  -70,  50,  20,  30,  10,  "seven_front.png", "seven_back.png", "seven_side.png", 0x544C42)); // Gasolinera-seven -57.5, 37.5, 20, 40, 10, "./textures/seven_front.png"
