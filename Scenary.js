@@ -17,7 +17,7 @@ class Skybox extends THREE.Mesh {
       new THREE.MeshBasicMaterial({map: new THREE.TextureLoader().load("./textures/skybox/sky_rt.png"),side: THREE.DoubleSide}), // right
       new THREE.MeshBasicMaterial({map: new THREE.TextureLoader().load("./textures/skybox/sky_rt.png"),side: THREE.DoubleSide}), // left
     ];
-    this.position.set(0, this.size / 2 - 10, 0);
+    this.position.set(0, this.size / 2 - 200, 0);
   }
 
   setOnFloor() {
