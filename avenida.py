@@ -29,9 +29,12 @@ class Semaphore(ap.Agent):
 
         self.type = 0
 
+        self.total_wait_time = 0    # Tiempo total de espera de los carros en el mismo carril
+        self.flag_last = False
+        self.flag = False
+
     def update(self):
         # Actualizar el estado del semaforo
-
         self.state_time += self.step_time
 
         if self.state == 0:
@@ -39,17 +42,30 @@ class Semaphore(ap.Agent):
             if self.state_time >= self.green_duration:
                 self.state = 1
                 self.state_time = 0
+                self.total_wait_time = 0
         elif self.state == 1:
             # Caso en el que el semaforo esta en amarillo
             if self.state_time >= self.yellow_duration:
                 self.state = 2
                 self.state_time = 0
+                self.flag = True
         elif self.state == 2:
             # Caso en el que el semaforo esta en rojo
             if self.state_time >= self.red_duration:
                 self.state = 0
                 self.state_time = 0
-                self.green_duration = random.randint(20, 30)
+
+    def count_wait_time(self):
+        self.total_wait_time = 0
+        for car in self.model.cars:
+            p = self.model.avenue.positions[self]
+            # Verifica si el carro apunta hacia el semaforo
+            dot_p1 = car.direction[0]*self.direction[0] + \
+                car.direction[1]*self.direction[1]
+
+            # Suma de espera de todos los carros
+            if dot_p1 < 0:
+                self.total_wait_time += car.wait_counter
 
 
 class Car(ap.Agent):
@@ -67,6 +83,8 @@ class Car(ap.Agent):
         self.x = 0
         self.y = 0
 
+        self.wait_counter = 0
+
     def update_position(self):
         # Inicializar posicion de carro
 
@@ -80,6 +98,11 @@ class Car(ap.Agent):
 
     def update_speed(self):
         # Definir la velocidad del carro
+
+        if (self.speed == 0):
+            self.wait_counter += 1
+        else:
+            self.wait_counter = 0
 
         # Verifica si el auto no ha chocado
         if self.state == 0:
@@ -161,16 +184,16 @@ class Car(ap.Agent):
 
         # Carro choca con caulquier otro carro
         if (closest_car_distance < 40):
-            self.speed = 0
+            self.speed = -1
             self.state = 0
-            closest_car.speed = 0
+            closest_car.speed = -1
             closest_car.state = 0
 
         # Carro choca con otro de su carril
         if min_car_distance < 40:
-            self.speed = 0
+            self.speed = -1
             self.state = 0
-            crashed_car.speed = 0
+            crashed_car.speed = -1
             crashed_car.state = 0
 
         # Se encontro un carro adelante cercano -> frenar mucho
@@ -225,9 +248,9 @@ class AvenueModel(ap.Model):
         self.cars.step_time = self.p.step_time
 
         # Numero de carros por calle
-        c_north = random.randint(int(self.p.cars/8), int(self.p.cars/3))
-        c_south = random.randint(int(self.p.cars/8), int(self.p.cars/3))
-        c_east = random.randint(int(self.p.cars/8), int(self.p.cars/3))
+        c_north = random.randint(int(self.p.cars/8), int(self.p.cars/3.5))
+        c_south = random.randint(int(self.p.cars/8), int(self.p.cars/3.5))
+        c_east = random.randint(int(self.p.cars/8), int(self.p.cars/3.5))
         c_west = int(self.p.cars - c_north - c_south - c_east)
 
         # Direcciones de carros
@@ -249,21 +272,20 @@ class AvenueModel(ap.Model):
         self.semaphores.yellow_duration = self.p.yellow
         self.semaphores.red_duration = self.p.red
 
+        # Direcciones de semaforos
         self.semaphores[0].direction = [0, 1]
         self.semaphores[1].direction = [0, -1]
         self.semaphores[2].direction = [1, 0]
         self.semaphores[3].direction = [-1, 0]
 
-        self.semaphores[0].type = 0
-        self.semaphores[1].type = 0
-        self.semaphores[2].type = 1
-        self.semaphores[3].type = 1
+        # Estados de semaforos
+        self.semaphores[0].state = 0
+        self.semaphores[1].state = 2
+        self.semaphores[2].state = 2
+        self.semaphores[3].state = 2
 
-        for semaphore in self.semaphores:
-            if (semaphore.type == 1):
-                semaphore.state = 2
-                semaphore.green_duration = self.p.red - self.p.yellow
-                semaphore.red_duration = self.p.green + self.p.yellow
+        # Flag de semaforo
+        self.semaphores[0].flag_last = True
 
         # Inicializa el entorno
         self.avenue = ap.Space(
@@ -287,7 +309,7 @@ class AvenueModel(ap.Model):
 
         # Carril horizontal derecho
         c_north1 = random.randint(int(c_north/5), int(c_north/2))
-        c_north2 = random.randint(int(c_north/4), int(c_north/2))
+        c_north2 = random.randint(int(c_north/4), int(c_north/2.5))
 
         for k in range(c_north1):
             self.avenue.move_to(
@@ -299,19 +321,9 @@ class AvenueModel(ap.Model):
             self.avenue.move_to(
                 self.cars[k], [self.p.size*0.5 - 190, 75*(k+1)])
 
-        # for k in range(int(c_north/3)):
-        #     self.avenue.move_to(
-        #         self.cars[k], [self.p.size*0.5 - 50, 75*(k+1)])
-        # for k in range(int(c_north/3), int(c_north/3) * 2, 1):
-        #     self.avenue.move_to(
-        #         self.cars[k], [self.p.size*0.5 - 120, 75*(k+3)])
-        # for k in range(int(c_north/3) * 2, c_north, 1):
-        #     self.avenue.move_to(
-        #         self.cars[k], [self.p.size*0.5 - 190, 75*(k+3)])
-
         # Carril horizontal izquierdo
         c_south1 = random.randint(int(c_south/5), int(c_south/2))
-        c_south2 = random.randint(int(c_south/4), int(c_south/2))
+        c_south2 = random.randint(int(c_south/4), int(c_south/2.5))
 
         for k in range(int(c_south1)):
             self.avenue.move_to(
@@ -325,7 +337,7 @@ class AvenueModel(ap.Model):
 
         # Carril vertical derecho
         c_east1 = random.randint(int(c_east/5), int(c_east/2))
-        c_east2 = random.randint(int(c_east/4), int(c_east/2))
+        c_east2 = random.randint(int(c_east/4), int(c_east/2.5))
 
         for k in range(c_east1):
             self.avenue.move_to(
@@ -339,7 +351,7 @@ class AvenueModel(ap.Model):
 
         # Carril vertical izquierdo
         c_west1 = random.randint(int(c_west/5), int(c_west/2))
-        c_west2 = random.randint(int(c_west/4), int(c_west/2))
+        c_west2 = random.randint(int(c_west/4), int(c_west/2.5))
 
         for k in range(c_west1):
             self.avenue.move_to(
@@ -388,7 +400,48 @@ class AvenueModel(ap.Model):
         self.cars.update_position()
         self.cars.update_speed()
 
-        green_duration = self.semaphores[0].green_duration
+        for semaphore in self.semaphores:
+            if(semaphore.flag):
+                print("entra 1")
+                semaphore.flag = False
+                if (semaphore.flag_last):
+                    print("entra 2")
+
+                    semaphore.flag_last = False
+                    self.semaphores.count_wait_time()
+                    counter = 0
+                    id_semaphore = 0
+                    id_front_semaphore = 0
+
+                    for k in range(len(self.semaphores)):
+                        if (self.semaphores[k].total_wait_time > counter):
+                            id_semaphore = k
+                            counter = self.semaphores[k].total_wait_time
+
+                    for k in range(len(self.semaphores)):
+                        if (self.semaphores[id_semaphore].direction[0] == 0 and self.semaphores[k].direction[0] == 0 and id_semaphore != k):
+                            id_front_semaphore = k
+                        elif(self.semaphores[id_semaphore].direction[1] == 0 and self.semaphores[k].direction[1] == 0 and id_semaphore != k):
+                            id_front_semaphore = k
+
+                    self.semaphores[id_semaphore].state = 0
+                    self.semaphores[id_semaphore].state_time = 0
+                    self.semaphores[id_semaphore].green_duration = self.p.green
+                    self.semaphores[id_semaphore].red_duration = (
+                        self.p.green/2) + (self.p.yellow/2)
+                    self.semaphores[id_front_semaphore].state = 2
+                    self.semaphores[id_front_semaphore].state_time = 0
+                    self.semaphores[id_front_semaphore].green_duration = self.p.green
+                    self.semaphores[id_front_semaphore].red_duration = (
+                        self.p.green/2) + (self.p.yellow/2) - (self.p.step_time)
+                    self.semaphores[id_front_semaphore].flag_last = True
+
+                    for k in range(len(self.semaphores)):
+                        if (k != id_semaphore and k != id_front_semaphore):
+                            self.semaphores[k].state = 2
+                            self.semaphores[k].state_time = 0
+                            self.semaphores[k].red_duration = self.p.steps / \
+                                self.p.step_time
 
         car_list = []
         for k in range(self.p.cars):
@@ -404,12 +457,6 @@ class AvenueModel(ap.Model):
                 'id': k + model.p.cars,
                 'state': self.semaphores[k].state
             })
-            if (self.semaphores[k].type == 0):
-                self.semaphores[k].green_duration = green_duration
-            else:
-                self.semaphores[k].red_duration = green_duration + \
-                    self.p.yellow
-                self.semaphores[k].green_duration = self.p.red - self.p.yellow
 
         self.data['frames'].append({
             'frame': self.frames,
@@ -436,10 +483,10 @@ class AvenueModel(ap.Model):
 # 1 segundo = 4 steps
 parameters = {
     'step_time': 0.1,    # Tiempo de step
-    'size': 9000,        # Tamano en metros de la avenida
+    'size': 10000,        # Tamano en metros de la avenida
     'green': 30,          # Duracion de la luz verde
-    'yellow': 3,         # Duracion de la luz amarilla
-    'red': 24,           # Duracion de la luz roja
+    'yellow': 4,         # Duracion de la luz amarilla
+    'red': 34,           # Duracion de la luz roja
     'cars': 120,          # Numero de autos en la simulacion
     'steps': 2500,       # Numero de pasos de la simulacion
 }

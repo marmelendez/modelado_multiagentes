@@ -17,7 +17,7 @@ class Skybox extends THREE.Mesh {
       new THREE.MeshBasicMaterial({map: new THREE.TextureLoader().load("./textures/skybox/sky_rt.png"),side: THREE.DoubleSide}), // right
       new THREE.MeshBasicMaterial({map: new THREE.TextureLoader().load("./textures/skybox/sky_rt.png"),side: THREE.DoubleSide}), // left
     ];
-    this.position.set(0, this.size / 2 - 200, 0);
+    this.position.set(0, this.size / 2 - 500, 0);
   }
 
   setOnFloor() {
@@ -623,7 +623,7 @@ export default class Scenary extends THREE.LOD {
     super();
 
     this.low = new THREE.Group();
-    this.low.add(new Skybox(900));
+    this.low.add(new Skybox(1800));
     this.low.add(new Intersection());
     this.low.add(new SidewalkGroup());
     this.trafficLightsLow = new TrafficLightGroup()
@@ -631,7 +631,7 @@ export default class Scenary extends THREE.LOD {
     this.low.add(new CubeGroup());
 
     this.high = new THREE.Group();
-    this.high.add(new Skybox(900));
+    this.high.add(new Skybox(1800));
     this.high.add(new Intersection());
     this.high.add(new SidewalkGroup());
     this.trafficLightsHigh = new TrafficLightGroup()

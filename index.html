@@ -420,15 +420,15 @@
 
                         // LOAD TRAFFIC LIGHTS
                     var colors = ['0x79de79', '0xffff00', '0xcc0000']
-                    scenary.trafficLightsLow.traffic1.setColor(colors[data.frames[frame].semaphores[0].state]);
-                    scenary.trafficLightsLow.traffic2.setColor(colors[data.frames[frame].semaphores[1].state]);
-                    scenary.trafficLightsLow.traffic3.setColor(colors[data.frames[frame].semaphores[2].state]);
-                    scenary.trafficLightsLow.traffic4.setColor(colors[data.frames[frame].semaphores[3].state]);
+                    scenary.trafficLightsLow.traffic1.setColor(colors[data.frames[frame].semaphores[1].state]);
+                    scenary.trafficLightsLow.traffic2.setColor(colors[data.frames[frame].semaphores[0].state]);
+                    scenary.trafficLightsLow.traffic3.setColor(colors[data.frames[frame].semaphores[3].state]);
+                    scenary.trafficLightsLow.traffic4.setColor(colors[data.frames[frame].semaphores[2].state]);
 
-                    scenary.trafficLightsHigh.traffic1.setColor(colors[data.frames[frame].semaphores[0].state]);
-                    scenary.trafficLightsHigh.traffic2.setColor(colors[data.frames[frame].semaphores[1].state]);
-                    scenary.trafficLightsHigh.traffic3.setColor(colors[data.frames[frame].semaphores[2].state]);
-                    scenary.trafficLightsHigh.traffic4.setColor(colors[data.frames[frame].semaphores[3].state]);
+                    scenary.trafficLightsHigh.traffic1.setColor(colors[data.frames[frame].semaphores[1].state]);
+                    scenary.trafficLightsHigh.traffic2.setColor(colors[data.frames[frame].semaphores[0].state]);
+                    scenary.trafficLightsHigh.traffic3.setColor(colors[data.frames[frame].semaphores[3].state]);
+                    scenary.trafficLightsHigh.traffic4.setColor(colors[data.frames[frame].semaphores[2].state]);
                     frame++;
                }
            }
@@ -523,7 +523,7 @@
 
       // CAMARA
       class Camera extends THREE.PerspectiveCamera {
-        constructor(fov = 60, aspect = window.innerWidth / window.innerHeight, near = 0.1, far = 1000) {
+        constructor(fov = 60, aspect = window.innerWidth / window.innerHeight, near = 0.1, far = 10000) {
           super(fov, aspect, near, far);
           this.insideCar = false;
           this.orbitControls = new OrbitControls(this, renderer.domElement);
